@@ -531,6 +531,7 @@ jQuery(document).ready(function ($) {
 		}
 	);
 
+	$("#deluge_webui_link").attr("href", localStorage.delugeAddress);
 	// Do initial check.
 	checkStatus();
 });
