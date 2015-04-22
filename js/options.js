@@ -1,143 +1,93 @@
-$(function () {
-	var $address = $('#address')
-		, $password = $('#password')
-		, $delugeDownloadIcon = $('#enable_download_torrent')
-		, $oneClickMagnets = $('#enable_one_click_magnet')
-		, $debugMode = $('#enable_debug_mode')
-		, $contextMenu = $('#enable_context_menu')
-		, background = chrome.extension.getBackgroundPage();
-	
-	function restoreOptions(version) {
-		$address.val(localStorage.delugeAddress);
-		$password.val(localStorage.delugePassword);
+var background = chrome.extension.getBackgroundPage();
 
-		if (localStorage.delugeDownloadIcon === 'true') {
-			$delugeDownloadIcon.attr('checked', 'checked');
-		} else {
-			$delugeDownloadIcon.removeAttr('checked');
-		}
-		
-		if (version.major > 1 || (version.major === 1 && version.minor > 3) ||
-				(version.major === 1 && version.minor === 3 && version.build > 3)) {
-			$('#magnet').show();
-			
-			if (localStorage.oneClickMagnets === 'true') {
-				$oneClickMagnets.attr('checked', 'checked');
-			} else {
-				$oneClickMagnets.removeAttr('checked');
-			}
-		}
-	
-		if (localStorage.contextMenu === 'true') {
-			$contextMenu.attr('checked', 'checked');
-		} else {
-			$contextMenu.removeAttr('checked');
-		}
+// Convert a string value to Boolean
+// Any string that is 'True' (case ignored) is True.
+// Any other string is false.
+String.prototype.toBoolean = function() {
+	return (this.toLowerCase() == "true");
+}
 
-		if (localStorage.debugMode === 'true') {
-			$debugMode.attr('checked', 'checked');
-		} else {
-			$debugMode.removeAttr('checked');
+function restoreOptions() {
+	$('#address').val(localStorage.delugeAddress);
+	$('#password').val(localStorage.delugePassword);
+	$('#handle_torrent_links').attr('checked', localStorage.delugeDownloadIcon.toBoolean());
+	$('#handle_magnet_links').attr('checked', localStorage.oneClickMagnets.toBoolean());
+	$('#enable_context_menu').attr('checked', localStorage.contextMenu.toBoolean());
+	$('#enable_debug_mode').attr('checked', localStorage.debugMode.toBoolean());
+}
+
+function saveOptions() {
+	var addressVal				= $('#address').val();
+	var passwordVal				= $('#password').val();
+	var handleTorrentLinks		= $('#handle_torrent_links').is(':checked');
+	var handleMagnetLinks		= $('#handle_magnet_links').is(':checked');
+	var contextMenuEnabled		= $('#enable_context_menu').is(':checked');
+	var debugMode				= $('#enable_debug_mode').is(':checked');
+
+	var messages				= [];
+	var messageText				= '';
+
+	if (addressVal) {
+		addressVal = addressVal.replace(/\/$/, '');
+		if (localStorage.delugeAddress != addressVal) {
+			messages.push('Address updated.');
+			localStorage.delugeAddress = addressVal;
 		}
 	}
 
-	function saveOptions() {
-		var message = []
-			, addressVal = $address.val()
-			, passwordVal = $password.val()
-			, $downloadLinkChecked = $delugeDownloadIcon.is(':checked')
-			, $oneClickMagnetsChecked = $oneClickMagnets.is(':checked')
-			, $debugModeChecked = $debugMode.is(':checked')
-			, $contextMenuChecked = $contextMenu.is(':checked')
-			, downloadIcon = localStorage.delugeDownloadIcon
-			, oneClickMagnets = localStorage.oneClickMagnets
-			, contextMenu = localStorage.contextMenu
-			, debugMode = localStorage.debugMode
-			, messageText = ''
-			, $message = $('#status-message');
-
-		if (addressVal) {
-			if (localStorage.delugeAddress !== addressVal) {
-				message.push('Address updated.');
-			}
-			localStorage.delugeAddress = addressVal.replace(/\/$/, '');
-		}
-		
-		if (passwordVal) {
-			if (localStorage.delugePassword !== passwordVal) {
-				message.push('Password updated.');
-			}
-			localStorage.delugePassword = passwordVal;
-		}
-		
-		if ($downloadLinkChecked && String($downloadLinkChecked) !== downloadIcon) {
-			message.push('Download torrent icon enabled!');
-		} else if (String($downloadLinkChecked) !== downloadIcon) {
-			message.push('Download torrent icon disabled!');
-		}
-		localStorage.delugeDownloadIcon = $downloadLinkChecked;
-		
-		if ($oneClickMagnetsChecked && String($oneClickMagnetsChecked) !== oneClickMagnets) {
-			message.push('One click magnet downloads enabled!');
-		} else if (String($oneClickMagnetsChecked) !== oneClickMagnets) {
-			message.push('One click magnet downloads disabled!');
-		}
-		localStorage.oneClickMagnets = $oneClickMagnetsChecked;
-		
-		if ($contextMenuChecked && String($contextMenuChecked) !== contextMenu) {
-			message.push('Context Menu enabled!');
-			background.Background.addContextMenu();
-		} else if (String($contextMenuChecked) !== contextMenu) {
-			message.push('Context Menu disabled!');
-			background.Background.removeContextMenu();
-		}
-		localStorage.contextMenu = $contextMenuChecked;
-
-		if ($debugModeChecked && String($debugModeChecked) !== debugMode) {
-			message.push('Debug mode enabled!');
-		} else if (String($debugModeChecked) !== debugMode) {
-			message.push('Debug mode disabled!');
-		}
-		localStorage.debugMode = $debugModeChecked;
-
-		background.Background.checkStatus();
-
-		if ($debugModeChecked) {
-			console.log('Deluge: options saved!');
-		}
-		
-		function hideMessage() {
-			$message.fadeOut();
-		}
-		
-		if (message.length > 0) {
-			$.each(message, function (index, obj) {
-				messageText += obj + '<br>';
-			});
-			$message.html(messageText).fadeIn();
-			setTimeout(hideMessage, 5000);
-		}
+	if (passwordVal && localStorage.delugePassword != passwordVal) {
+		messages.push('Password updated.');
+		localStorage.delugePassword = passwordVal;
 	}
 
+	if (String(handleTorrentLinks) != localStorage.delugeDownloadIcon) {
+		messages.push("Download torrent icon " + ((handleTorrentLinks) ? "en" : "dis") + "abled!");
+		localStorage.delugeDownloadIcon = handleTorrentLinks;
+	}
 
-	(function () {
-		$('.buttons .save').live('click', function () {
-			saveOptions();
-			window.close();
-			return false;
+	if (String(handleMagnetLinks) != localStorage.oneClickMagnets) {
+		messages.push("One click magnet downloads " + ((handleMagnetLinks) ? "en" : "dis") + "abled!");
+		localStorage.oneClickMagnets = handleMagnetLinks;
+	}
+
+	if (String(contextMenuEnabled) != localStorage.contextMenu) {
+		messages.push("Context Menu " + ((contextMenuEnabled) ? "en" : "dis") + "abled!");
+		localStorage.contextMenu = contextMenuEnabled
+	}
+
+	background.Background.ContextMenu(contextMenuEnabled);
+
+	if (String(debugMode) !== localStorage.debugMode) {
+		messages.push("Debug mode " + ((debugMode) ? "en" : "dis") + "abled!");
+		localStorage.debugMode = debugMode;
+	}
+
+	background.Background.checkStatus();
+
+	if (debugMode) {
+		console.log('Deluge: options saved!');
+	}
+
+	if (messages.length > 0) {
+		$.each(messages, function (index, obj) {
+			messageText += obj + '<br>';
 		});
+		messageText += "<br>";
+		$('#status-message').finish();
+		$('#status-message').html(messageText).fadeIn().delay(5000).fadeOut();
+	}
+}
 
-		$('.buttons .apply').live('click', function () {
-			saveOptions();
-			return false;
-		});
-
-		$('.buttons .cancel').live('click', function () {
-			window.close();
-			return false;
-		});
-
-		
-		background.Background.getVersion(restoreOptions);
-	}());
+$(function() {
+	$('.buttons .save').on('click', function () {
+		saveOptions();
+		window.close();
+	});
+	$('.buttons .apply').on('click', function () {
+		saveOptions();
+	});
+	$('.buttons .cancel').on('click', function () {
+		window.close();
+	});
+	restoreOptions();
 });

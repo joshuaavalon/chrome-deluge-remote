@@ -1,8 +1,8 @@
 var Background = (function($) {
 	// Store all public methods and attributes.
-	var pub = {}
-		, statusTimer = null
-		, contextMenu = null;
+	var pub = {};
+	var statusTimer = null;
+	var contextMenu = null;
 
 	/*
 	 * Intervals used for status checking.
@@ -355,6 +355,14 @@ var Background = (function($) {
 
 		return false;
 	}
+
+	pub.ContextMenu = function (addremove) {
+		if (addremove) {
+			this.addContextMenu;
+		} else {
+			this.removeContextMenu;
+		}
+	};
 
 	pub.addContextMenu = function () {
 		if (contextMenu === null) {

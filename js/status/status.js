@@ -72,7 +72,7 @@ jQuery(document).ready(function ($) {
 	function updateTable() {
 		// Clear out any existing timers.
 		refreshTimer.unsubscribe();
-		$('[name]=selected_torrents[checked]').each(function () {
+		$("[name=selected_torrents]:checked").each(function () {
 			checked.push($(this).val());
 		});
 		Torrents.update()
@@ -140,7 +140,7 @@ jQuery(document).ready(function ($) {
 					// Checkbox.
 					$(document.createElement('td'))
 						.addClass('table_cell_checkbox')
-						.html($('<input type="checkbox" name="selected_torrents[]"' + isChecked + '>').val(torrent.id)),
+						.html($('<input type="checkbox" name="selected_torrents"' + isChecked + '>').val(torrent.id)),
 
 					// Position cell.
 					$(document.createElement('td'))
@@ -195,7 +195,7 @@ jQuery(document).ready(function ($) {
 
 		var $mainActions = $('.main_actions');
 
-		$('.toggle_managed', $mainActions).live('click', function () {
+		$('.toggle_managed', $mainActions).on('click', function () {
 			var rowData = getRowData(this)
 				, autoManaged = !rowData.torrent.autoManaged;
 
@@ -228,14 +228,14 @@ jQuery(document).ready(function ($) {
 				});
 		}
 
-		$('.state', $mainActions).live('click', function () {
+		$('.state', $mainActions).on('click', function () {
 			var rowData = getRowData(this)
 				, method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
 
 			setTorrentStates(method, [rowData.torrentId]);
 		});
 
-		$('.move_up', $mainActions).live('click', function () {
+		$('.move_up', $mainActions).on('click', function () {
 			var rowData = getRowData(this);
 
 			Deluge.api('core.queue_up', [[rowData.torrentId]])
@@ -252,7 +252,7 @@ jQuery(document).ready(function ($) {
 				});
 		});
 
-		$('.move_down', $mainActions).live('click', function () {
+		$('.move_down', $mainActions).on('click', function () {
 			var rowData = getRowData(this);
 
 			Deluge.api('core.queue_down', [[rowData.torrentId]])
@@ -269,7 +269,7 @@ jQuery(document).ready(function ($) {
 				});
 		});
 
-		$('.delete', $mainActions).live('click', function () {
+		$('.delete', $mainActions).on('click', function () {
 			pauseTableRefresh();
 
 			var newElm = $('<div>');
@@ -305,7 +305,7 @@ jQuery(document).ready(function ($) {
 				});
 		}
 
-		$('.delete-options a').live('click', function () {
+		$('.delete-options a').on('click', function () {
 			var action = $(this).attr('rel') || 'cancel'
 				, parentClass = $(this).parents('td').attr('class')
 				, delData = (action === 'data') ? true : false
@@ -329,7 +329,7 @@ jQuery(document).ready(function ($) {
 				rowData = getRowData(this);
 				removeTorrent(rowData.torrentId, delData);
 			} else {
-				$('[name]=selected_torrents[checked]').each(function () {
+				$("[name=selected_torrents]:checked").each(function () {
 					rowData = getRowData(this);
 					removeTorrent(rowData.torrentId, delData);
 				});
@@ -344,11 +344,11 @@ jQuery(document).ready(function ($) {
 			});
 		}
 
-		$('#delete-selected-torrent').live('click', function () {
+		$('#delete-selected-torrent').on('click', function () {
 			performMassRemove(false);
 		});
 
-		$('#delete-selected-data').live('click', function () {
+		$('#delete-selected-data').on('click', function () {
 			performMassRemove(true);
 		});
 
@@ -361,15 +361,15 @@ jQuery(document).ready(function ($) {
 			return torrents
 		}
 
-		$('#pause-selected').live('click', function () {
+		$('#pause-selected').on('click', function () {
 			setTorrentStates('core.pause_torrent', getSelTorrents());
 		});
 
-		$('#resume-selected').live('click', function () {
+		$('#resume-selected').on('click', function () {
 			setTorrentStates('core.resume_torrent', getSelTorrents());
 		});
 
-		$('#select-all').live('click', function () {
+		$('#select-all').on('click', function () {
 			$('.table_cell_checkbox').find(':checkbox').attr('checked', this.checked);
 		});
 	}());
@@ -406,7 +406,7 @@ jQuery(document).ready(function ($) {
 			}
 		});
 
-		$addButton.live('click', function (e) {
+		$addButton.on('click', function (e) {
 			e.preventDefault();
 			var url = $inputBox.val();
 

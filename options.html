@@ -4,7 +4,7 @@
 		<meta charset="utf-8" />
 		<title>Deluge in Chrome : Configuration</title>
 		
-		<script src="js/libs/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/libs/jquery-2.1.3.min.js" type="text/javascript" charset="utf-8"></script>
 		<script src="js/options.js" type="text/javascript" charset="utf-8"></script>
 		
 		<link rel="stylesheet" href="css/master.css" type="text/css" />
@@ -15,7 +15,7 @@
 			.buttons .left { float: left; }
 			.buttons .right { float: right; }
 			#content { width: 790px; margin-left: auto; margin-right: auto; border: 1px solid #CCC; padding: 5px; }
-			#options form { width: 500px; margin-left: auto; margin-right: auto;}
+			#options fieldset { width: 500px; margin-left: auto; margin-right: auto;}
 		</style>
 	</head>
 
@@ -39,11 +39,8 @@
 				<p>This extension requires an accessible version of Deluge web interface to be running. Please refer to the <a href="http://deluge-torrent.org/" target="_blank">Deluge documentation</a> on how to get this working.</p>
 				<p>In order to connect to the web interface with need to know some details about the web interface. The address used to access the interface (http://address:port) and finally the password used to login.</p>
 			</div>
-		
-			<div id="status-message"></div>
-		
-			<form class="nice-form" style="width: 500px">
-				<fieldset>
+
+			<fieldset style="width: 500px; align:">
 				<legend>Options</legend>
 				<p>
 					<label>Address:</label>
@@ -56,13 +53,13 @@
 				</p>
 		
 				<p>
-					<input type="checkbox" name="enable_download_torrent" id="enable_download_torrent" value="1" />
-					<label class="normal" for="enable_download_torrent"> Enable download torrent icon? <span>(experimental)</span></label>
+					<input type="checkbox" name="handle_torrent_links" id="handle_torrent_links" value="1" />
+					<label class="normal" for="handle_torrent_links"> Enable download torrent icon? <span>(experimental)</span></label>
 				</p>
 				
-				<p id="magnet" style="display: none">
-					<input type="checkbox" name="enable_one_click_magnet" id="enable_one_click_magnet" value="0" />
-					<label class="normal" for="enable_one_click_magnet"> Enable one click magnet link downloads? <span>(versions 1.3.4 and up only)</span></label>
+				<p id="magnet">
+					<input type="checkbox" name="handle_magnet_links" id="handle_magnet_links" value="0" />
+					<label class="normal" for="handle_magnet_links"> Enable one click magnet link downloads? <span>(versions 1.3.4 and up only)</span></label>
 				</p>
 				
 				<p>
@@ -74,19 +71,29 @@
 					<input type="checkbox" name="enable_debug_mode" id="enable_debug_mode" value="0" />
 					<label class="normal" for="enable_debug_mode"> Enable debug mode? </label>
 				</p>
-				</fieldset>
+			</fieldset>
 		
-				<div class="buttons">
+			<div class="buttons">
 				<div class="left">
-					<button type="submit" class="cancel">Cancel</button>
+					<button class="cancel">Cancel</button>
 				</div>
 				<div class="right">
-					<button type="submit" class="save">Save</button>
-					<button type="submit" class="apply">Apply</button>
+					<button class="save">Save</button>
+					<button class="apply">Apply</button>
 				</div>
 				<div class="clr"></div>
+			</div>
+
+			<div class="buttons">
+				<div class="left">
+					<div class="clr"></div>
 				</div>
-			</form>
+				<div class="right">
+					<div id="status-message" class="right"></div>
+				</div>
+				<div class="clr"></div>
+			</div>
+
 			</div>
 		</div>
 	</body>
