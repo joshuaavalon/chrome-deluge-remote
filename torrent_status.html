@@ -1,74 +1,73 @@
 <!DOCTYPE HTML>
 <html>
-  <head>
-    <meta http-equiv="content-type" content="text/html; charset=utf-8">
-    <title></title>
-    <link rel="stylesheet" href="css/buttons.css" type="text/css" media="screen" />
-    <link rel="stylesheet" href="css/master.css" type="text/css" media="screen" />
-    <script src="js/libs/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/global.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/deluge.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/torrent.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/timer.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/status/torrents.js" type="text/javascript" charset="utf-8"></script>
-    <script src="js/status/status.js" type="text/javascript" charset="utf-8"></script>
-  </head>
+	<head>
+		<meta http-equiv="content-type" content="text/html; charset=utf-8">
+		<title></title>
+		<link rel="stylesheet" href="css/buttons.css" type="text/css" media="screen" />
+		<link rel="stylesheet" href="css/master.css" type="text/css" media="screen" />
+		<script src="js/libs/jquery-1.7.1.min.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/global.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/deluge.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/torrent.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/timer.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/status/torrents.js" type="text/javascript" charset="utf-8"></script>
+		<script src="js/status/status.js" type="text/javascript" charset="utf-8"></script>
+	</head>
 
-  <body>
+	<body>
 
-    <div id="overlay">
-      <div class="overlay_inner">
-        <span class="error">&nbsp;</span>
-      </div>
-    </div>
+		<div id="overlay">
+			<div class="overlay_inner">
+				<span class="error">&nbsp;</span>
+			</div>
+		</div>
 
-    <div id="add-torrent-dialog" class="dialog">
-      <div class="inner">
-        <div class="header"><span>Add Torrent</span> <a href="#close" class="close"><span>Close</span></a></div>
-        <div class="body">
-          <p>Please enter URL or Magnet link and click add.</p>
-          <input type="text" id="manual_add_input" placeholder="http://"  />
-          <p><button class="clean-gray" id="manual_add_button">Add</button></p>
-        </div>
-      </div>
-    </div>
+		<div id="add-torrent-dialog" class="dialog">
+			<div class="inner">
+				<div class="header"><span>Add Torrent</span> <a href="#close" class="close"><span>Close</span></a></div>
+				<div class="body">
+					<p>Please enter URL or Magnet link and click add.</p>
+					<input type="text" id="manual_add_input" placeholder="http://"	/>
+					<p><button class="clean-gray" id="manual_add_button">Add</button></p>
+				</div>
+			</div>
+		</div>
 
-    <div id="logo"><img src="/images/icons/16.png" /> <span>Deluge in Chrome</span></div>
+		<div id="logo"><img src="/images/icons/16.png" /> <span>Deluge in Chrome</span></div>
 
-    <a href="#add-torrent" id="add-torrent" title="Add Torrent"><span>Add Torrent</span></a>
+		<a href="#add-torrent" id="add-torrent" title="Add Torrent"><span>Add Torrent</span></a>
 
-    <div id="global-information">
-      <span class="all-label">Total torrents</span>: <span class="data all">0</span>
-      <span class="downloading-label">Downloading</span>: <span class="data downloading">0</span>
-      <span class="seeding-label">Seeding</span>: <span class="data seeding">0</span>
-      <span class="paused-label">Paused</span>: <span class="data paused">0</span>
-      <span class="queued-label">Queued</span>: <span class="data queued">0</span>
-    </div>
+		<div id="global-information">
+			<span class="all-label">Total torrents</span>: <span class="data all">0</span>
+			<span class="downloading-label">Downloading</span>: <span class="data downloading">0</span>
+			<span class="seeding-label">Seeding</span>: <span class="data seeding">0</span>
+			<span class="paused-label">Paused</span>: <span class="data paused">0</span>
+			<span class="queued-label">Queued</span>: <span class="data queued">0</span>
+		</div>
 
-    <div style="clear: both;"></div>
+		<div style="clear: both;"></div>
 
-    <table id="torrent_table">
-      <thead>
-        <tr>
-          <th id="table_header_checkbox"><input type="checkbox" id="select-all"></th>
-          <th id="table_header_position" rel="position" class="sortable">#</th>
-          <th id="table_header_name" rel="name" class="sortable">Name</th>
-          <th id="table_header_size" rel="size" class="sortable">Size</th>
-          <th id="table_header_progress" rel="progress" class="sortable">Progress</th>
-          <th id="table_header_speed" rel="speed" class="sortable">Speed <span class="small">(D) - (U)</span></th>
-          <th id="table_header_eta" rel="eta" class="sortable">ETA</th>
-          <th id="table_header_actions">&nbsp;</th>
-        </tr>
-      </thead>
-      <tbody><tr><td>&nbsp;</td></tr></tbody>
-    </table>
+		<table id="torrent_table">
+			<thead>
+				<tr>
+					<th id="table_header_checkbox"><input type="checkbox" id="select-all"></th>
+					<th id="table_header_position" rel="position" class="sortable">#</th>
+					<th id="table_header_name" rel="name" class="sortable">Name</th>
+					<th id="table_header_size" rel="size" class="sortable">Size</th>
+					<th id="table_header_progress" rel="progress" class="sortable">Progress</th>
+					<th id="table_header_speed" rel="speed" class="sortable">Speed <span class="small">(D) - (U)</span></th>
+					<th id="table_header_eta" rel="eta" class="sortable">ETA</th>
+					<th id="table_header_actions">&nbsp;</th>
+				</tr>
+			</thead>
+			<tbody><tr><td>&nbsp;</td></tr></tbody>
+		</table>
 
-
-    <div id="mass-buttons">
-      <a id="pause-selected" class="state pause" title="Pause selected torrents"></a>
-      <a id="resume-selected" class="state resume" title="Resume selected torrents"></a>
-      <a id="delete-selected-torrent" class="torrent" rel="torrent" title="Delete selected torrent files"></a>
-      <a id="delete-selected-data" class="data" rel="data" title="Delete select torrents with Data"></a>
-    </div>
-  </body>
+		<div id="mass-buttons">
+			<a id="pause-selected" class="state pause" title="Pause selected torrents"></a>
+			<a id="resume-selected" class="state resume" title="Resume selected torrents"></a>
+			<a id="delete-selected-torrent" class="torrent" rel="torrent" title="Delete selected torrent files"></a>
+			<a id="delete-selected-data" class="data" rel="data" title="Delete select torrents with Data"></a>
+		</div>
+	</body>
 </html>

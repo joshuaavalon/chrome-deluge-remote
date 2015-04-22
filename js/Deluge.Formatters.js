@@ -35,10 +35,10 @@ Copyright:
  * @description A collection of functions for string formatting values.
  * @namespace Deluge.Formatters
  */
- 
+
 // Only want the formatters, so fake this.
 Deluge = {}
-  
+
 Deluge.Formatters = {
 	/**
 	 * Formats a date string in the locale's date representation based on the
@@ -111,7 +111,7 @@ Deluge.Formatters = {
 			}
 		else { time = time / 60; }
 	
-		if (time < 24) { 
+		if (time < 24) {
 			var hours = Math.floor(time)
 			var minutes = Math.round(60 * (time - hours))
 			if (minutes > 0) {
