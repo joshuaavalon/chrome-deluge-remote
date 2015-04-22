@@ -216,6 +216,7 @@ table#torrent_table thead th:last-child {
 
 .table_cell_name {
 	font-weight: 700;
+	word-break: break-all;
 }
 
 #table_header_size {
