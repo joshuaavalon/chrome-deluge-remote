@@ -86,11 +86,29 @@ var Torrents = (function ($) {
 	};
 
 	pub.update = function () {
-		var that = this
-			, api = Deluge.api('web.update_ui', [[
-			'queue', 'name', 'total_size', 'state', 'progress',
-			'download_payload_rate', 'upload_payload_rate', 'eta',
-			'ratio', 'is_auto_managed'], {}], { timeout: 2000 })
+		var that = this;
+		var api = Deluge.api('web.update_ui', [[
+				"queue",
+				"name",
+				"total_size",
+				"state",
+				"progress",
+				"download_payload_rate",
+				"upload_payload_rate",
+				"eta",
+				"ratio",
+				"is_auto_managed",
+				"num_seeds",
+				"total_seeds",
+				"num_peers",
+				"total_peers",
+				"seeds_peers_ratio",
+				"is_finished",
+				"is_seed",
+				"active_time",
+				"seeding_time",
+				"time_added"
+			], {}], { timeout: 2000 })
 			.success(function (response) {
 				var id, tmp;
 				// Reset torrents array.

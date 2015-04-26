@@ -1,9 +1,9 @@
 var Timer = function (interval) {
-	var updateInterval = interval
-		, handlers = []
-		, timeOut = null
-		, pub = {}
-		, i;
+	var updateInterval = interval;
+	var handlers = [];
+	var timeOut = null;
+	var pub = {};
+	var i;
 	
 	function updateHandlers() {
 		for (i = 0; i < handlers.length; i += 1) {

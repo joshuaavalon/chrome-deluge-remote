@@ -4,7 +4,7 @@ body {
 	font-size: 62.5%;
 	margin: 0;
 	min-height: 200px;
-	width: 790px;
+	width: 780px;
 	overflow-x: hidden;
 }
 
@@ -20,12 +20,14 @@ a {
 	background: #CCC;
 	border: 1px solid #222;
 	position: relative;
-	width: 140px;
+	/*width: 140px;*/
+	width: 100%;
 }
 
 .progress_bar .inner {
-	background: #4A7C91 url(../images/progress_bar.png) repeat-x top left;
-	height: 14px;
+	/*background: #4A7C91 url(../images/progress_bar.png) repeat-x top left;*/
+	background: linear-gradient(to bottom, #A7BFCA, #4A7C91);
+	height: 16px;
 	width: 0%;
 	text-align: center;
 }
@@ -37,9 +39,11 @@ a {
 	font-family: Verdana;
 	text-align: center;
 	width: 100%;
+	line-height: 16px;
 	position: absolute;
 	left: 0;
 	top: 0;
+	text-shadow: 0px 0px 3px #000, 0px 0px 3px #000, 0px 0px 3px #000;
 }
 
 #overlay, .dialog {
@@ -165,62 +169,6 @@ a {
 #global-information span.data {
 	font-weight: bold;
 	margin-right: 10px;
-}
-
-#mass-buttons {
-	margin: 15px 0 0 0;
-}
-
-#mass-buttons button {
-	padding: 5px;
-}
-
-table#torrent_table {
-	border-spacing: 0;
-	width: 790px;
-	font-size: 1.2em;
-}
-
-.scrollbars table#torrent_table {
-	width: 772px;
-}
-
-table#torrent_table thead th {
-	background-image: url(/images/table_div.png), -webkit-gradient(linear, 0% 18%, 0% 52%, from(#FDFDFD), to(#E9E9E9));
-	background-repeat: no-repeat;
-	background-position: left 2px;
-	border-top: 1px solid #CCC;
-	border-bottom: 1px solid #CCC;
-	padding: 3px;
-}
-
-table#torrent_table thead th:first-child {
-	background-image: -webkit-gradient(linear, 0% 18%, 0% 52%, from(#FDFDFD), to(#E9E9E9));
-	border-left: 1px solid #CCC;
-	border-top-left-radius: 5px;
-}
-
-table#torrent_table thead th:last-child {
-	border-right: 1px solid #CCC;
-	border-top-right-radius: 5px;
-}
-
-#table_header_position {
-	width: 20px;
-}
-
-#table_header_name {
-	max-width: 250px;
-	text-align: left;
-}
-
-.table_cell_name {
-	font-weight: 700;
-	word-break: break-all;
-}
-
-#table_header_size {
-	width: 80px;
 }
 
 .table_cell_size {

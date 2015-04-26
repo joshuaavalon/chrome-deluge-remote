@@ -9,6 +9,17 @@ function Torrent(id, data) {
 	this.speedUpload = data.upload_payload_rate;
 	this.eta = data.eta;
 	this.autoManaged = data.is_auto_managed;
+	this.ratio = data.ratio;
+	this.num_seeds = data.num_seeds;
+	this.total_seeds = data.total_seeds;
+	this.num_peers = data.num_peers;
+	this.total_peers = data.total_peers;
+	this.seeds_peers_ratio = data.seeds_peers_ratio;
+	this.is_finished = data.is_finished;
+	this.is_seed = data.is_seed;
+	this.active_time = data.active_time;
+	this.seeding_time = data.seeding_time;
+	this.time_added = data.time_added;
 }
 
 Torrent.prototype.calcSize = function (size) {
@@ -28,6 +39,12 @@ Torrent.prototype.calcSize = function (size) {
 Torrent.prototype.getHumanSize = function () {
 	return this.calcSize(this.size);
 };
+Torrent.prototype.getHumanDownloadedSize = function() {
+	return this.calcSize(this.size * this.progress / 100)
+}
+Torrent.prototype.getRatio = function() {
+	return this.ratio.toFixed(2);
+}
 
 Torrent.prototype.getPosition = function () {
 	if (this.position < 0) {
@@ -49,7 +66,7 @@ Torrent.prototype.getUpload = function () {
 };
 
 Torrent.prototype.getSpeeds = function () {
-	return this.getDownload() + ' - ' + this.getUpload();
+	return "↓" + this.getDownload() + " - ↑" + this.getUpload();
 };
 
 Torrent.prototype.getEta = function () {

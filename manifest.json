@@ -1,6 +1,7 @@
 {
 	"name": "Remote Deluge",
 	"description": "Provides a quick overview of torrent status for Deluge.",
+	"version": "0.1.1",
 	"icons": {
 		"48": "images/icons/128.png",
 		"64": "images/icons/64.png",
@@ -15,7 +16,7 @@
 	"background": {
 		"scripts": [
 			"js/libs/jquery-2.1.3.min.js",
-			"js/Deluge.js",
+			"js/deluge.js",
 			"js/global.js",
 			"js/background.js"
 		],
@@ -36,7 +37,5 @@
 	"permissions": [
 		 "tabs", "http://*/*", "https://*/*", "contextMenus"
 	],
-
-	"version": "0.1.0",
 	"manifest_version": 2
 }

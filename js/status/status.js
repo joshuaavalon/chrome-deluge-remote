@@ -5,18 +5,18 @@
  * - Rendering HTML for table.
  * - Logic for action buttons.
  */
-jQuery(document).ready(function ($) {
+$(function() {
 	// Get extension background page for use within the code.
-	var backgroundPage = chrome.extension.getBackgroundPage()
+	var backgroundPage = chrome.extension.getBackgroundPage();
 		// Store the extension activation state.
-		, extensionActivated = false
-		, checked = []
+	var extensionActivated = false;
+	var checked = [];
 		// Set the initial height for the overlay.
-		, $overlay = $('#overlay').css({ height: $(document).height() });
+	var $overlay = $('#overlay').css({ height: $(document).height() });
 
 
 	// Setup timer information.
-	const REFRESH_INTERVAL = 2000;
+	const REFRESH_INTERVAL = 30000;
 	var refreshTimer = Timer(REFRESH_INTERVAL);
 
 	// I can't get the popup to play nicely when there is a scroll bar and then
@@ -26,11 +26,11 @@ jQuery(document).ready(function ($) {
 	// See: http://code.google.com/p/chromium/issues/detail?id=31494
 	//
 	// Listen for a table refresh event and add the class if needed.
-	$(document).bind('table_updated', function (e) {
+	/*$(document).bind('table_updated', function (e) {
 		if ($(document).height() > $(window).height()) {
 			$('body').addClass('scrollbars');
 		}
-	});
+	});*/
 
 	/*
 	 * Helper function for creating progress bar element.
@@ -43,7 +43,7 @@ jQuery(document).ready(function ($) {
 			.appendTo($bar);
 
 		$(document.createElement('span'))
-			.html(torrent.state + ' ' + torrent.getPercent())
+			.html(torrent.getPercent() + " - " + torrent.state)
 			.appendTo($bar);
 
 		return $bar;
@@ -52,20 +52,20 @@ jQuery(document).ready(function ($) {
 	function actionLinks(torrent) {
 		// Work out which states to use based on torrent information.
 		var state = torrent.state === 'Paused' ? 'resume' : 'pause'
-			, managed = torrent.autoManaged ? 'managed' : 'unmanaged';
+		var managed = torrent.autoManaged ? 'managed' : 'unmanaged';
 
 		return $(document.createElement('div'))
 			.addClass('main_actions')
 			.append(
-				// Delete.
-				$(document.createElement('a')).addClass('delete').prop('title', 'Delete Options'),
 				// Pause/Resume buttons.
 				$(document.createElement('a')).addClass('state').addClass(state).prop('title', 'Pause/Resume Torrent'),
 				// Move up button.
 				$(document.createElement('a')).addClass('move_up').prop('title', 'Move Torrent Up'),
 				$(document.createElement('a')).addClass('move_down').prop('title', 'Move Torrent Down'),
 				// Auto managed options.
-				$(document.createElement('a')).addClass('toggle_managed').addClass(managed).prop('title', 'Toggle Auto-managed State')
+				$(document.createElement('a')).addClass('toggle_managed').addClass(managed).prop('title', 'Toggle Auto-managed State'),
+				// Delete.
+				$(document.createElement('a')).addClass('delete').prop('title', 'Delete Options')
 			);
 	}
 
@@ -109,6 +109,7 @@ jQuery(document).ready(function ($) {
 		$globalInformation = $('#global-information');
 
 		if (Global.getDebugMode()) {
+			console.log(Torrents);
 			console.log(information);
 		}
 
@@ -121,83 +122,54 @@ jQuery(document).ready(function ($) {
 
 	function renderTable() {
 		// Fetch new information.
-		var torrents = Torrents.getAll()
-			, $tbody = $('#torrent_table tbody')
-			, i, torrent, isChecked, $tr;
+		var torrents = Torrents.getAll();
+		$(".torrent_row").remove();
+		for (var i = 0; i < torrents.length ; i++) {
+			var torrent = torrents[i];
 
-		$tbody.empty();
-		for (i = 0; i < torrents.length; i += 1) {
-			torrent = torrents[i];
-			isChecked = '';
-
-			if (checked.indexOf(torrent.id) !== -1) {
-				isChecked = 'checked=checked';
-			}
-			$tr = $(document.createElement('tr'))
-				.data({ id: torrent.id }) /* Store torrent id on the tr */
+			var t = $("<div>")
+				.data({ id: torrent.id }) /* Store torrent id */
 				.addClass('torrent_row')
 				.append(
-					// Checkbox.
-					$(document.createElement('td'))
-						.addClass('table_cell_checkbox')
-						.html($('<input type="checkbox" name="selected_torrents"' + isChecked + '>').val(torrent.id)),
-
-					// Position cell.
-					$(document.createElement('td'))
-						.addClass('table_cell_position')
-						.html(torrent.getPosition()),
-
-					// name.
-					$(document.createElement('td'))
-						.addClass('table_cell_name')
-						.html(torrent.name),
-
-					// Size.
-					$(document.createElement('td'))
-						.addClass('table_cell_size')
-						.html(torrent.getHumanSize()),
-
-					// Progress bar.
-					$(document.createElement('td'))
-						.addClass('table_cell_progress')
-						.html(progressBar(torrent)),
-
-					// Speed.
-					$(document.createElement('td'))
-						.addClass('table_cell_speed')
-						.html(torrent.getSpeeds()),
-
-					// Estimated time.
-					$(document.createElement('td'))
-						.addClass('table_cell_eta')
-						.html(torrent.getEta()),
-
-					// Action menus.
-					$(document.createElement('td'))
-						.addClass('table_cell_actions')
-						.append(actionLinks(torrent))
+					$("<table>").append($("<tr>").append(
+						$("<td>").addClass('table_cell_position').html(torrent.getPosition()),
+						$("<td>").addClass('table_cell_name').html(torrent.name)
+					)),
+					$("<table>").append($("<tr>").append(
+						$("<td>").addClass('table_cell_size').html((torrent.progress != 100 ? torrent.getHumanDownloadedSize() + " of " : "" ) + torrent.getHumanSize()), // 
+						$("<td>").addClass('table_cell_eta').html("ETA: " + torrent.getEta()),
+						$("<td>").addClass('table_cell_ratio').html("Ratio: " + torrent.getRatio()),
+						$("<td>").addClass('table_cell_peers').html("Peers: " + torrent.num_peers + "/" + torrent.total_peers),
+						$("<td>").addClass('table_cell_seeds').html("Seeds: " + torrent.num_seeds + "/" + torrent.total_seeds),
+						//$("<td>").addClass('table_cell_seeds-peers').html("(" + torrent.seeds_peers_ratio.toFixed(1) + ")"), //this doesn't really look good
+						$("<td>").addClass('table_cell_speed').html(torrent.getSpeeds())
+					)),
+					$("<table>").append($("<tr>").append(
+						$("<td>").addClass('table_cell_progress').html(progressBar(torrent))
+					)),
+					$("<table>").append($("<tr>").append(
+						$("<td>").addClass('table_cell_actions').append(actionLinks(torrent))
+					))
 				);
-
-			torrent = null;
-			$tbody.append($tr);
+			$("#torrent_container").append(t);
 		}
-		checked = [];
-		$(document).trigger('table_updated');
+
+		//$(document).trigger('table_updated');
 	}
 
 	(function () {
 		function getRowData(element) {
-			var $parent = $(element).parents('tr')
-				, torrentId = $parent.data('id')
-				, torrent = Torrents.getById(torrentId);
+			var parent = $(element).parents(".torrent_row");
+			var torrentId = parent.data('id');
+			var torrent = Torrents.getById(torrentId);
 			return {'torrentId': torrentId, 'torrent': torrent};
 		}
 
 		var $mainActions = $('.main_actions');
 
 		$('.toggle_managed', $mainActions).on('click', function () {
-			var rowData = getRowData(this)
-				, autoManaged = !rowData.torrent.autoManaged;
+			var rowData = getRowData(this);
+			var autoManaged = !rowData.torrent.autoManaged;
 
 			Deluge.api('core.set_torrent_auto_managed', [rowData.torrentId, autoManaged])
 				.success(function () {
@@ -228,10 +200,14 @@ jQuery(document).ready(function ($) {
 				});
 		}
 
+		$("#torrent_container").on("click", ".main_actions .state", function() {
+			var rowData = getRowData(this);
+			var method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
+			setTorrentStates(method, [rowData.torrentId]);
+		});
 		$('.state', $mainActions).on('click', function () {
-			var rowData = getRowData(this)
-				, method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
-
+			var rowData = getRowData(this);
+			var method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
 			setTorrentStates(method, [rowData.torrentId]);
 		});
 
@@ -268,6 +244,8 @@ jQuery(document).ready(function ($) {
 					}
 				});
 		});
+		
+		console.log($('.delete', $mainActions));
 
 		$('.delete', $mainActions).on('click', function () {
 			pauseTableRefresh();
@@ -319,7 +297,7 @@ jQuery(document).ready(function ($) {
 				});
 			}
 
-			// If canceling remove overlay and resume refresh now and return.
+			// If cancelling remove overlay and resume refresh now and return.
 			if (action === 'cancel') {
 				removeButtons();
 				return false;

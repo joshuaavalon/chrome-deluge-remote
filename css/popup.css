@@ -1,0 +1,79 @@
+html {
+	width: 560px;
+}
+
+body {
+	color: #373737;
+	font-family: "MS Trebuchet", Arial, Helvetica, sans-serif;
+	font-size: 62.5%;
+	margin: 0;
+	min-height: 200px;
+	width: 558px;
+	overflow-x: hidden;
+}
+
+#filters {
+	display:block;
+	border-spacing: 0;
+	font-size: 1.2em;
+	width: 552px;
+	background-image: linear-gradient(to bottom, #FDFDFD, #E9E9E9);
+	background-repeat: no-repeat;
+	background-position: left 2px;
+	border: 1px solid #CCC;
+	padding: 3px;
+	border-top-left-radius: 5px;
+	border-top-right-radius: 5px;
+}
+
+#torrent_container {
+	border: 1px solid #CCC;
+	border-top: 0px;
+	width: 100%;
+}
+
+.torrent_row {
+	border-top: 1px solid #AAA;
+	position: relative;
+}
+
+.torrent_row:nth-child(1) {
+	border-top: 0px;
+}
+
+.torrent_row:nth-child(even) {
+	background-color: #EEE;
+}
+
+.torrent_row table {
+	width: 100%;
+}
+
+.table_cell_position {
+	width: 25px;
+}
+.table_cell_name {
+	width: 100%;
+	font-weight: bold;
+	font-size:	9pt;
+	word-break: break-all;
+}
+
+.table_cell_size {
+	text-align: left;
+	width: 25%;
+}
+
+.table_cell_eta {
+	text-align:	left;
+}
+
+.table_cell_speed {
+	text-align:	right;
+}
+
+.table_cell_actions {
+	position: absolute;
+	bottom: 5px;
+	right: 5px;
+}
