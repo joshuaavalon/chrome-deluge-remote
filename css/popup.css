@@ -129,6 +129,15 @@ body {
 	border-right: none;
 }
 
+.progress_bar .inner.Error {	/* Error is red */
+	background: linear-gradient(to bottom, #CC0000 50%, #990000 50%, #CC0000);
+	border: 1px solid #FF0000;
+	border-right: none;
+}
+.progress_bar .inner.Error.finished {
+	border: 1px solid #FF0000;
+}
+
 .progress_bar .inner.Seeding {	/* Seeding is blue */
 	background: linear-gradient(to bottom, #A7BFCA 50%, #80A3B2 50%, #A7BFCA);
 	border: 1px solid #8B8B8B;

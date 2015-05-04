@@ -16,7 +16,7 @@ $(function() {
 
 
 	// Setup timer information.
-	const REFRESH_INTERVAL = 3000;
+	const REFRESH_INTERVAL = 30000;
 	var refreshTimer = Timer(REFRESH_INTERVAL);
 
 	// I can't get the popup to play nicely when there is a scroll bar and then
@@ -127,35 +127,48 @@ $(function() {
 	function renderTable() {
 		// Fetch new information.
 		var torrents = Torrents.getAll();
-		$(".torrent_row").remove();
+		$("#torrent_container").empty();
 		for (var i = 0; i < torrents.length ; i++) {
 			var torrent = torrents[i];
 
-			var t = $("<div>")
-				.data({ id: torrent.id }) /* Store torrent id */
-				.addClass('torrent_row')
-				.append(
-					$("<table>").append($("<tr>").append(
-						$("<td>").addClass('table_cell_position').html(torrent.getPosition()),
-						$("<td>").addClass('table_cell_name').html(torrent.name)
-					)),
-					$("<table>").append($("<tr>").append(
-						$("<td>").addClass('table_cell_size').html((torrent.progress != 100 ? torrent.getHumanDownloadedSize() + " of " : "" ) + torrent.getHumanSize()), // 
-						$("<td>").addClass('table_cell_eta').html("ETA: " + torrent.getEta()),
-						$("<td>").addClass('table_cell_ratio').html("Ratio: " + torrent.getRatio()),
-						$("<td>").addClass('table_cell_peers').html("Peers: " + torrent.num_peers + "/" + torrent.total_peers),
-						$("<td>").addClass('table_cell_seeds').html("Seeds: " + torrent.num_seeds + "/" + torrent.total_seeds),
-						//$("<td>").addClass('table_cell_seeds-peers').html("(" + torrent.seeds_peers_ratio.toFixed(1) + ")"), //this doesn't really look good
-						$("<td>").addClass('table_cell_speed').html(torrent.getSpeeds())
-					)),
-					$("<table>").append($("<tr>").append(
-						$("<td>").addClass('table_cell_progress').html(progressBar(torrent))
-					)),
-					$("<table>").append($("<tr>").append(
-						$("<td>").addClass('table_cell_actions').append(actionLinks(torrent))
-					))
-				);
-			$("#torrent_container").append(t);
+			var filter_state = $("#filter_state").val();
+			var filter_tracker_host = $("#filter_tracker_host").val();
+			var filter_label = $("#filter_label").val();
+
+			if (filter_state == "All" || filter_state == torrent.state || (filter_state == "Active" && (torrent.speedDownload > 0 || torrent.speedUpload > 0)) ) {
+				if (filter_tracker_host == "All" || filter_tracker_host == torrent.tracker_host || (filter_tracker_host == "Error" && (torrent.tracker_status.indexOf("Error") > -1)) ) {
+					if (filter_label == "All" || filter_label == torrent.label) {
+
+						$("#torrent_container").append($("<div>")
+							.data({ id: torrent.id }) /* Store torrent id */
+							.addClass('torrent_row')
+							.append(
+								$("<table>").append($("<tr>").append(
+									$("<td>").addClass('table_cell_position').html(torrent.getPosition()),
+									$("<td>").addClass('table_cell_name').html(torrent.name)
+								)),
+								$("<table>").append($("<tr>").append(
+									$("<td>").addClass('table_cell_size').html((torrent.progress != 100 ? torrent.getHumanDownloadedSize() + " of " : "" ) + torrent.getHumanSize()), // 
+									$("<td>").addClass('table_cell_eta').html("ETA: " + torrent.getEta()),
+									$("<td>").addClass('table_cell_ratio').html("Ratio: " + torrent.getRatio()),
+									$("<td>").addClass('table_cell_peers').html("Peers: " + torrent.num_peers + "/" + torrent.total_peers),
+									$("<td>").addClass('table_cell_seeds').html("Seeds: " + torrent.num_seeds + "/" + torrent.total_seeds),
+									//$("<td>").addClass('table_cell_seeds-peers').html("(" + torrent.seeds_peers_ratio.toFixed(1) + ")"), //this doesn't really look good
+									$("<td>").addClass('table_cell_speed').html(torrent.getSpeeds())
+								)),
+								$("<table>").append($("<tr>").append(
+									$("<td>").addClass('table_cell_progress').html(progressBar(torrent))
+								)),
+								$("<table>").append($("<tr>").append(
+									$("<td>").addClass('table_cell_actions').append(actionLinks(torrent))
+								))
+							)
+						);
+
+					}
+				}
+			}
+
 		}
 
 		//$(document).trigger('table_updated');
@@ -340,15 +353,27 @@ $(function() {
 		$("#sort").val(localStorage.sortColumn);
 		$("#sort_invert").attr("checked", (localStorage.sortMethod == "desc") );
 
-		$('#sort').on("change", function () {
+		$("#filter_state").val(localStorage["filter_state"] || "All");
+		$("#filter_tracker_host").val(localStorage["filter_tracker_host"] || "All");
+		$("#filter_label").val(localStorage["filter_label"] || "All");
+
+		$("#sort").on("change", function () {
 			localStorage.sortColumn = $(this).val();
 			updateTable();
 		});
-		$('#sort_invert').on("change", function () {
-			console.log($(this).is(':checked'));
-			localStorage.sortMethod = ($(this).is(':checked')) ? "desc" : "asc";
+
+		$("#sort_invert").on("change", function () {
+			console.log($(this).is(":checked"));
+			localStorage.sortMethod = ($(this).is(":checked")) ? "desc" : "asc";
 			updateTable();
 		});
+
+		$("#filter_state, #filter_tracker_host, #filter_label").on("change", function () {
+			localStorage[$(this).attr("id")] = $(this).val();
+			renderTable();
+		});
+
+		
 
 	}());
 

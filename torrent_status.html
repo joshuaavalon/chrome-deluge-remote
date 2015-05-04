@@ -50,16 +50,26 @@
 
 		<div id="filters">
 			<span>Sort:</span>
-			<select id="sort">
-				<option value="name">Name</option>
-				<option value="size">Size</option>
-				<option value="progress">Progress %</option>
-				<option value="speed">Speed</option>
-				<option value="eta">ETA</option>
-				<option value="position">Position</option>
-			</select>
-			<input type="checkbox" id="sort_invert" />
-			<span>Filter: (i am a filter)</span>
+				<select id="sort">
+					<option value="name">Name</option>
+					<option value="size">Size</option>
+					<option value="progress">Progress %</option>
+					<option value="speed">Speed</option>
+					<option value="eta">ETA</option>
+					<option value="position">Position</option>
+				</select>
+				<input type="checkbox" id="sort_invert" /><label for="sort_invert">Invert</label>
+			<br>
+			<span>Filters:&nbsp;</span>
+			<span>State:</span>
+				<select id="filter_state">
+				</select>
+			<span>Tracker:</span>
+				<select id="filter_tracker_host">
+				</select>
+			<span>Label:</span>
+				<select id="filter_label">
+				</select>
 		</div>
 		<div id="torrent_container"></div>
 

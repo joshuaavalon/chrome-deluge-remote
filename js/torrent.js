@@ -20,6 +20,9 @@ function Torrent(id, data) {
 	this.active_time = data.active_time;
 	this.seeding_time = data.seeding_time;
 	this.time_added = data.time_added;
+	this.tracker_host = data.tracker_host;
+	this.tracker_status = data.tracker_status;
+	this.label = data.label;
 }
 
 Torrent.prototype.calcSize = function (size) {
