@@ -12,6 +12,21 @@ body {
 	overflow-x: hidden;
 }
 
+#global-information {
+	position: absolute;
+	top: 4px;
+	left: 110px;
+	padding: 5px;
+	font-size: 1.1em;
+	color: darkRed;
+}
+
+#global-information span.data {
+	font-weight: bold;
+	margin-right: 10px;
+}
+
+
 #filters {
 	display:block;
 	border-spacing: 0;

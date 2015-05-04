@@ -126,19 +126,6 @@ a {
 	font-size: 2em;
 }
 
-#global-information {
-	display: block;
-	float: right;
-	padding: 5px;
-	font-size: 1.1em;
-	color: darkRed;
-}
-
-#global-information span.data {
-	font-weight: bold;
-	margin-right: 10px;
-}
-
 .table_cell_size {
 	text-align: center;
 }
