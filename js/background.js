@@ -24,7 +24,7 @@ var Background = (function($) {
 					if (response && response[3] === 'Offline') {
 						Deluge.api('web.start_daemon', [response[2]])
 							.success(function (response) {
-								if (Global.getDebugMode()) {
+								if (localStorage.debugMode.toBoolean()) {
 									console.log('Daemon started');
 								}
 								// Give the Daemon a few seconds to start.
@@ -35,7 +35,7 @@ var Background = (function($) {
 					}
 				})
 				.error(function () {
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('Deluge: Error getting host status');
 					}
 					d.reject();
@@ -93,7 +93,7 @@ var Background = (function($) {
 	 * @return API promise - can attach additional success/error callbacks.
 	 * */
 	pub.checkStatus = function (options) {
-		if (Global.getDebugMode()) {
+		if (localStorage.debugMode.toBoolean()) {
 			console.log('Deluge: Checking status');
 		}
 
@@ -129,7 +129,7 @@ var Background = (function($) {
 								} else {
 									// Wrong login - not much we can do, try
 									// checking in a bit.
-									if (Global.getDebugMode()) {
+									if (localStorage.debugMode.toBoolean()) {
 										console.log('Deluge: Incorrect login details.');
 									}
 									statusTimer = setTimeout(check_status, STATUS_CHECK_ERROR_INTERVAL);
@@ -138,13 +138,13 @@ var Background = (function($) {
 								}
 							})
 							.error(function (jqXHR, text, err) {
-								if (Global.getDebugMode()) {
+								if (localStorage.debugMode.toBoolean()) {
 									console.log('Deluge: Error logging in');
 								}
 								pub.deactivate();
 							});
 					} else {
-						if (Global.getDebugMode()) {
+						if (localStorage.debugMode.toBoolean()) {
 							console.log('Deluge: API error occured');
 						}
 						// Unknown API error, deactivate the extension.
@@ -156,7 +156,7 @@ var Background = (function($) {
 					// Unknown error (resulting from 500/400 status codes
 					// normally); best thing to do is check again, but with a
 					// longer interval.
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('Deluge: Unknown error occured');
 					}
 					statusTimer = setTimeout(pub.checkStatus, STATUS_CHECK_ERROR_INTERVAL);
@@ -174,7 +174,7 @@ var Background = (function($) {
 	 * successfully.
 	 */
 	pub.activate = function () {
-		if (Global.getDebugMode()) {
+		if (localStorage.debugMode.toBoolean()) {
 			console.log('Deluge: Extension activated');
 		}
 		chrome.browserAction.setIcon({path: 'images/icons/deluge_active.png'});
@@ -190,7 +190,7 @@ var Background = (function($) {
 	 * This is normally called after doing a status check, which returned false.
 	 */
 	pub.deactivate = function () {
-		if (Global.getDebugMode()) {
+		if (localStorage.debugMode.toBoolean()) {
 			console.log('Deluge: Extension deactivated');
 		}
 		chrome.browserAction.setIcon({path: 'images/icons/deluge.png'});
@@ -224,19 +224,19 @@ var Background = (function($) {
 				Deluge.api('web.add_torrents', [[{'path': tmpTorrent, 'options': options}]])
 					.success(function (obj) {
 						if (obj) {
-							if (Global.getDebugMode()) {
+							if (localStorage.debugMode.toBoolean()) {
 								console.log('deluge: added torrent to deluge.');
 							}
 							sendResponse({msg: 'success', result: obj, error: null});
 							return;
 						}
-						if (Global.getDebugMode()) {
+						if (localStorage.debugMode.toBoolean()) {
 							console.log('deluge: unable to add torrent to deluge.');
 						}
 						sendResponse({msg: 'error', result: null, error: 'unable to add torrent to deluge'});
 					})
 					.error(function (req, status, err) {
-						if (Global.getDebugMode()) {
+						if (localStorage.debugMode.toBoolean()) {
 							console.log('deluge: unable to add torrent to deluge.');
 						}
 						sendResponse({msg: 'error', result: null, error: 'unable to add torrent to deluge'});
@@ -250,19 +250,19 @@ var Background = (function($) {
 				'prioritize_first_last_pieces']])
 				.success(function (obj) {
 					if (obj) {
-						if (Global.getDebugMode()) {
+						if (localStorage.debugMode.toBoolean()) {
 							console.log('deluge: got options!');
 						}
 						addToDeluge(obj);
 						return;
 					}
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('deluge: unable to fetch options.');
 					}
 					sendResponse({msg: 'error', result: null, error: 'unable to fetch options.'});
 				})
 				.error(function (req, status, err) {
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('deluge: unable to fetch options.');
 					}
 					sendResponse({msg: 'error', result: null, error: 'unable to fetch options.'});
@@ -273,19 +273,19 @@ var Background = (function($) {
 		Deluge.api('web.download_torrent_from_url', [request.url, ''])
 			.success(function (obj) {
 				if (obj) {
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('deluge: downloaded torrent.');
 					}
 					addTorrent(obj);
 					return;
 				}
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: failed to download torrent from URL, no obj or result.');
 				}
 				sendResponse({msg: 'error', result: null, error: 'failed to download torrent from URL.'});
 			})
 			.error(function (req, status, err) {
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: failed to download torrent from URL.');
 				}
 				sendResponse({msg: 'error', result: null, error: 'failed to download torrent from URL.'});
@@ -302,19 +302,19 @@ var Background = (function($) {
 		Deluge.api('core.add_torrent_magnet', [request.url, ''])
 			.success(function (id) {
 				if (id) {
-					if (Global.getDebugMode()) {
+					if (localStorage.debugMode.toBoolean()) {
 						console.log('deluge: downloaded torrent.');
 					}
 					sendResponse({msg: 'success', result: id, error: null});
 					return;
 				}
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: failed to add torrent from magnet, no obj or result.');
 				}
 				sendResponse({msg: 'error', result: null, error: 'failed to add torrent from magnet.'});
 			})
 			.error(function (req, status, err) {
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: failed to add torrent from magnet.');
 				}
 				sendResponse({msg: 'error', result: null, error: 'failed to add torrent from magnet.'});
@@ -348,7 +348,7 @@ var Background = (function($) {
 				}
 			});
 		} else {
-			if (Global.getDebugMode()) {
+			if (localStorage.debugMode.toBoolean()) {
 				console.log('Deluge: Link not a torrent!');
 			}
 		}
@@ -391,14 +391,14 @@ var Background = (function($) {
 	pub.getVersion = function(sendResponse) {
 		Deluge.api('daemon.info')
 			.success(function (version) {
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: got version.');
 				}
 				version = version.split('-')[0].split('.');
 				sendResponse({major: Number(version[0]), minor: Number(version[1]), build: Number(version[2])});
 			})
 			.error(function (req, status, err) {
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log('deluge: failed to get version.');
 				}
 				sendResponse(0);

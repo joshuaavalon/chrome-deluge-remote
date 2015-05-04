@@ -159,15 +159,51 @@ body {
 }
 
 
+.table_cell_actions a {
+	border: 0;
+	cursor: pointer;
+	display: inline-block;
+	height: 16px;
+	margin: 0 1px;
+	width: 16px;
+}
+
+.table_cell_actions .state {
+	background: url(/images/pause.png) no-repeat top left;
+}
+.table_cell_actions .state.resume {
+	background: url(/images/start.png) no-repeat top left;
+}
+
+.table_cell_actions .move_up {
+	background: url(/images/up.png) no-repeat left top;
+}
+
+.table_cell_actions .move_down {
+	background: url(/images/down.png) no-repeat left top;
+}
+
+.table_cell_actions .managed {
+	background: url(/images/manage_active.png) no-repeat top left;
+}
+
+.table_cell_actions .unmanaged {
+	background: url(/images/manage.png) no-repeat top left;
+}
+
+.table_cell_actions .delete {
+	background: url(/images/remove.png) no-repeat left top;
+}
+
 .delete-options .rm_cancel {
-	background: url(/themes/standard/images/cancel.png) no-repeat left top;
+	background: url(/images/cancel.png) no-repeat left top;
 }
 
 .delete-options .rm_torrent_data {
-	background: url(/themes/standard/images/trash.png) no-repeat left top;
+	background: url(/images/trash.png) no-repeat left top;
 }
 
 .delete-options .rm_torrent {
-	background: url(/themes/standard/images/database.png) no-repeat left top;
+	background: url(/images/torrent_file.png) no-repeat left top;
 }
 

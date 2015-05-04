@@ -1,9 +1,9 @@
 {
 	"name": "Remote Deluge",
 	"description": "Provides a quick overview of torrent status for Deluge.",
-	"version": "0.1.1",
+	"version": "0.1.2",
 	"icons": {
-		"48": "images/icons/128.png",
+		"128": "images/icons/128.png",
 		"64": "images/icons/64.png",
 		"32": "images/icons/32.png",
 		"16": "images/icons/16.png"
@@ -26,7 +26,7 @@
 	"browser_action": {
 		"default_icon": "images/icons/deluge.png",
 		"default_title": "__MSG_browser_title_disabled__",
-		"default_popup": "torrent_status.html"
+		"default_popup": "popup.html"
 	},
 	"content_scripts": [
 		{
