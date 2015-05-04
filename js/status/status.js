@@ -277,9 +277,9 @@ $(function() {
 			if ($(this).hasClass("rm_cancel")) {
 				//removeButtons();
 			} else if ($(this).hasClass("rm_torrent")) {
-				DelugeMethod("core.remove_torrent", torrent.id, false);
+				DelugeMethod("core.remove_torrent", torrent, false);
 			} else if ($(this).hasClass("rm_torrent_data")) {
-				DelugeMethod("core.remove_torrent", torrent.id, true);
+				DelugeMethod("core.remove_torrent", torrent, true);
 			} else {
 				return false;
 			}
