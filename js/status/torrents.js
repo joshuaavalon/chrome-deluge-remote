@@ -107,8 +107,15 @@ var Torrents = (function ($) {
 				"is_seed",
 				"active_time",
 				"seeding_time",
-				"time_added"
-			], {}], { timeout: 2000 })
+				"time_added",
+				"tracker_host",
+				"tracker_status",
+				"label"
+			],
+				{}
+			],
+				{ timeout: 2000 }
+			)
 			.success(function (response) {
 				var id, tmp;
 				// Reset torrents array.
@@ -124,6 +131,25 @@ var Torrents = (function ($) {
 					if (response.filters.state.hasOwnProperty(id)) {
 						tmp = response.filters.state[id];
 						globalInformation[tmp[0].toLowerCase()] = tmp[1];
+					}
+				}
+
+				for (id in response.filters) {
+					if (response.filters.hasOwnProperty(id)) {
+						$("#filter_"+id).empty();
+						for (var i = 0; i < response.filters[id].length; i++) {
+
+							var text = response.filters[id][i][0];
+							text = (text == "" ? "<blank>" : text);
+							text += " (" + response.filters[id][i][1] + ")";
+
+							$("#filter_"+id).append($('<option>', {
+								value: response.filters[id][i][0],
+								text: text
+							}));
+
+						}
+						$("#filter_"+id).val(localStorage["filter_"+id] || "All");
 					}
 				}
 
