@@ -16,7 +16,7 @@ $(function() {
 
 
 	// Setup timer information.
-	const REFRESH_INTERVAL = 30000;
+	const REFRESH_INTERVAL = 3000;
 	var refreshTimer = Timer(REFRESH_INTERVAL);
 
 	// I can't get the popup to play nicely when there is a scroll bar and then
@@ -39,6 +39,8 @@ $(function() {
 		var $bar = $(document.createElement('div')).addClass('progress_bar');
 		$(document.createElement('div'))
 			.addClass('inner')
+			.addClass(torrent.state)
+			.addClass((torrent.is_finished ? "finished" : ""))
 			.css('width', torrent.getPercent())
 			.appendTo($bar);
 
@@ -69,12 +71,14 @@ $(function() {
 			);
 	}
 
+	function updateTableDelay(ms) {
+		setTimeout(updateTable, ms);
+	}
+
 	function updateTable() {
 		// Clear out any existing timers.
 		refreshTimer.unsubscribe();
-		$("[name=selected_torrents]:checked").each(function () {
-			checked.push($(this).val());
-		});
+		console.log("updating");
 		Torrents.update()
 			.success(function () {
 				renderTable();
@@ -108,7 +112,7 @@ $(function() {
 		var information = Torrents.getGlobalInformation();
 		$globalInformation = $('#global-information');
 
-		if (Global.getDebugMode()) {
+		if (localStorage.debugMode.toBoolean()) {
 			console.log(Torrents);
 			console.log(information);
 		}
@@ -167,189 +171,111 @@ $(function() {
 
 		var $mainActions = $('.main_actions');
 
-		$('.toggle_managed', $mainActions).on('click', function () {
-			var rowData = getRowData(this);
-			var autoManaged = !rowData.torrent.autoManaged;
+		function DelugeMethod(method, torrent, rmdata) {
+			pauseTableRefresh();
+			var methods_messages = {
+				"core.resume_torrent":				{success: "Deluge: Resumed torrent",			failure: "Deluge: Failed to resume torrent."},
+				"core.pause_torrent":				{success: "Deluge: Paused torrent",				failure: "Deluge: Failed to pause torrent."},
+				"core.queue_up":					{success: "Deluge: Moved torrent up queue",		failure: "Deluge: Failed to move torrent up queue."},
+				"core.queue_down":					{success: "Deluge: Moved torrent down queue",	failure: "Deluge: Failed to move torrent down queue."},
+				"core.set_torrent_auto_managed":	{success: "Deluge: Toggled auto-managed.",		failure: "Deluge: Failed to toggle auto-managed."},
+				"core.remove_torrent":				{success: "Deluge: Deleted torrent.",			failure: "Deluge: Failed to delete torrent."}
+			};
 
-			Deluge.api('core.set_torrent_auto_managed', [rowData.torrentId, autoManaged])
-				.success(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Auto managed - ' + autoManaged);
+			var actions;
+			if (method == "core.set_torrent_auto_managed") {	//auto-managed toggle has different call format
+				actions = [torrent.id, !torrent.autoManaged];
+			} else if (method == "core.remove_torrent") {		//remove torrent - if rmdata is true, data is removed as well
+				actions = [torrent.id, rmdata];
+			} else {
+				actions = [[torrent.id]];
+			}
+
+			Deluge.api(method, actions)
+				.success(function (data, textStatus, jqXHR) {
+					if (localStorage.debugMode.toBoolean()) {
+						console.log(methods_messages[method].success);
 					}
-					updateTable();
+					console.log("action sent");
+					updateTableDelay(250);
 				})
 				.error(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Failed to toggle auto managed');
-					}
-				});
-		});
-
-		function setTorrentStates(method, torrentIds) {
-			Deluge.api(method, [torrentIds])
-				.success(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Updated state');
-					}
-					updateTable();
-				})
-				.error(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Failed to update state');
+					if (localStorage.debugMode.toBoolean()) {
+						console.log(methods_messages[method].failure);
 					}
 				});
 		}
 
-		$("#torrent_container").on("click", ".main_actions .state", function() {
+		$("#torrent_container").on("click", ".main_actions *", function() {
 			var rowData = getRowData(this);
-			var method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
-			setTorrentStates(method, [rowData.torrentId]);
-		});
-		$('.state', $mainActions).on('click', function () {
-			var rowData = getRowData(this);
-			var method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
-			setTorrentStates(method, [rowData.torrentId]);
-		});
-
-		$('.move_up', $mainActions).on('click', function () {
-			var rowData = getRowData(this);
-
-			Deluge.api('core.queue_up', [[rowData.torrentId]])
-				.success(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Moved torrent up');
-					}
-					updateTable();
-				})
-				.error(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Failed to move torrent up');
-					}
-				});
+			var method;
+			var rmdata = false;
+			if ($(this).hasClass("state")) {
+				method = rowData.torrent.state === 'Paused' ? 'core.resume_torrent' : 'core.pause_torrent';
+			} else if ($(this).hasClass("move_up")) {
+				method = "core.queue_up";
+			} else if ($(this).hasClass("move_down")) {
+				method = "core.queue_down";
+			} else if ($(this).hasClass("toggle_managed")) {
+				method = "core.set_torrent_auto_managed";
+			} else if ($(this).hasClass("rm_torrent_data")) {
+				method = "core.remove_torrent";
+				rmdata = true;
+			} else if ($(this).hasClass("rm_torrent")) {
+				method = "core.remove_torrent";
+				rmdata = false;
+			} else {
+				return;
+			}
+			DelugeMethod(method, rowData.torrent, rmdata);
 		});
 
-		$('.move_down', $mainActions).on('click', function () {
-			var rowData = getRowData(this);
-
-			Deluge.api('core.queue_down', [[rowData.torrentId]])
-				.success(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Moved torrent down');
-					}
-					updateTable();
-				})
-				.error(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Failed to move torrent down');
-					}
-				});
-		});
-		
-		console.log($('.delete', $mainActions));
-
-		$('.delete', $mainActions).on('click', function () {
+		$("#torrent_container").on("click", ".main_actions .delete", function() {
 			pauseTableRefresh();
 
-			var newElm = $('<div>');
-
-			newElm.addClass('delete-options').hide();
-			$('.main_actions', $(this).parents('td')).hide();
-			$(this).parents('td').append(newElm);
-			newElm.fadeIn('fast', function () {
-				var $tmp = $(this);
-
-				$tmp.append(
-					// Cancel.
-					$(document.createElement('a')).addClass('cancel').prop('rel', 'cancel').prop('title', 'Cancel'),
-					// Delete torrent and data.
-					$(document.createElement('a')).addClass('data').prop('rel', 'data').prop('title', 'Delete with Data'),
-					// Delete just torrent.
-					$(document.createElement('a')).addClass('torrent').prop('rel', 'torrent').prop('title', 'Delete just Torrent File')
-				);
+			$('.main_actions', $(this).parents('td')).fadeOut(function() {
+				$(this).parents('td').append(
+					$("<div>")
+						.addClass("delete-options")
+						.append($("<a>").addClass('rm_cancel'))
+						.append($("<a>").addClass('rm_torrent_data'))
+						.append($("<a>").addClass('rm_torrent'))
+				).hide().fadeIn();
 			});
+
 		});
 
-		function removeTorrent(id, delData) {
-			Deluge.api('core.remove_torrent', [id, delData])
-				.success(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Removed torrent');
-					}
-				})
-				.error(function () {
-					if (Global.getDebugMode()) {
-						console.log('Deluge: Failed to remove torrent');
-					}
-				});
-		}
-
-		$('.delete-options a').on('click', function () {
-			var action = $(this).attr('rel') || 'cancel'
-				, parentClass = $(this).parents('td').attr('class')
-				, delData = (action === 'data') ? true : false
-				, rowData;
+		$("#torrent_container").on("click", ".delete-options a", function() {
+			var action = $(this).attr("rel") || "cancel";
+			var delData = (action === "data") ? true : false;
+			var torrent = getRowData(this).torrent;
 
 			function removeButtons() {
 				// Remove buttons, resume refresh.
-				$('.delete-options').fadeOut('fast', function () {
+				$('.delete-options').fadeOut(function () {
 					resumeTableRefresh();
-					updateTable();
+					$('.main_actions', $(this).parents('td')).fadeIn(function() {
+						updateTable();
+					});
 				});
 			}
 
 			// If cancelling remove overlay and resume refresh now and return.
-			if (action === 'cancel') {
-				removeButtons();
+			if ($(this).hasClass("rm_cancel")) {
+				//removeButtons();
+			} else if ($(this).hasClass("rm_torrent")) {
+				DelugeMethod("core.remove_torrent", torrent.id, false);
+			} else if ($(this).hasClass("rm_torrent_data")) {
+				DelugeMethod("core.remove_torrent", torrent.id, true);
+			} else {
 				return false;
 			}
 
-			if (parentClass === 'table_cell_actions') {
-				rowData = getRowData(this);
-				removeTorrent(rowData.torrentId, delData);
-			} else {
-				$("[name=selected_torrents]:checked").each(function () {
-					rowData = getRowData(this);
-					removeTorrent(rowData.torrentId, delData);
-				});
-			}
 			removeButtons();
 			return false;
+
 		});
 
-		function performMassRemove(delData) {
-			$(':checked', '.torrent_row').each(function (i, sel) {
-				removeTorrent($(sel).val(), delData);
-			});
-		}
-
-		$('#delete-selected-torrent').on('click', function () {
-			performMassRemove(false);
-		});
-
-		$('#delete-selected-data').on('click', function () {
-			performMassRemove(true);
-		});
-
-		function getSelTorrents() {
-			var torrents = [];
-			$(':checked', '.torrent_row').each(function (i, sel) {
-				torrents.push($(sel).val());
-			});
-
-			return torrents
-		}
-
-		$('#pause-selected').on('click', function () {
-			setTorrentStates('core.pause_torrent', getSelTorrents());
-		});
-
-		$('#resume-selected').on('click', function () {
-			setTorrentStates('core.resume_torrent', getSelTorrents());
-		});
-
-		$('#select-all').on('click', function () {
-			$('.table_cell_checkbox').find(':checkbox').attr('checked', this.checked);
-		});
 	}());
 
 	(function () {
@@ -411,27 +337,19 @@ $(function() {
 	}());
 
 	$(function() {
-		$('#table_header_' + localStorage.sortColumn).addClass('sorted ' + localStorage.sortMethod);
+		$("#sort").val(localStorage.sortColumn);
+		$("#sort_invert").attr("checked", (localStorage.sortMethod == "desc") );
 
-		$('.sortable').click(function () {
-			var $link = $(this)
-				, column = $link.attr('rel');
-			// If the link clicked is different to the active one
-			// then reset the assending order and add the active class.
-			if (column === localStorage.sortColumn) {
-				// If it's the same just change the sorting order.
-				localStorage.sortMethod = localStorage.sortMethod === 'asc' ? 'desc' : 'asc';
-				$link.removeClass('asc desc').addClass(localStorage.sortMethod);
-			} else {
-				// Make sure none of the links are the active one.
-				$('.sortable').removeClass('sorted asc desc');
-				$link.addClass('sorted asc');
-
-				localStorage.sortMethod = 'asc';
-				localStorage.sortColumn = column;
-			}
+		$('#sort').on("change", function () {
+			localStorage.sortColumn = $(this).val();
 			updateTable();
 		});
+		$('#sort_invert').on("change", function () {
+			console.log($(this).is(':checked'));
+			localStorage.sortMethod = ($(this).is(':checked')) ? "desc" : "asc";
+			updateTable();
+		});
+
 	}());
 
 	/*
@@ -474,7 +392,7 @@ $(function() {
 	// timers within this script handle table updating.
 	function activated() {
 		if (!extensionActivated) {
-			if (Global.getDebugMode()) {
+			if (localStorage.debugMode.toBoolean()) {
 				console.log('Deluge: ACTIVATED');
 			}
 			extensionActivated = true;
@@ -496,7 +414,7 @@ $(function() {
 	// Setup listeners for closing message overlays coming from background.
 	chrome.extension.onRequest.addListener(
 		function (request, sender, sendResponse) {
-			if (Global.getDebugMode()) {
+			if (localStorage.debugMode.toBoolean()) {
 				console.log(request.msg);
 			}
 			if (request.msg === 'extension_activated') {

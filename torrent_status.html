@@ -48,14 +48,20 @@
 
 		<div style="clear: both;"></div>
 
-		<div id="filters"><span>Sort: (status/%complete/age/queue)</span><span>Filter: (i am a filter)</span></div>
+		<div id="filters">
+			<span>Sort:</span>
+			<select id="sort">
+				<option value="name">Name</option>
+				<option value="size">Size</option>
+				<option value="progress">Progress %</option>
+				<option value="speed">Speed</option>
+				<option value="eta">ETA</option>
+				<option value="position">Position</option>
+			</select>
+			<input type="checkbox" id="sort_invert" />
+			<span>Filter: (i am a filter)</span>
+		</div>
 		<div id="torrent_container"></div>
 
-		<!--<div id="mass-buttons">
-			<a id="pause-selected" class="state pause" title="Pause selected torrents"></a>
-			<a id="resume-selected" class="state resume" title="Resume selected torrents"></a>
-			<a id="delete-selected-torrent" class="torrent" rel="torrent" title="Delete selected torrent files"></a>
-			<a id="delete-selected-data" class="data" rel="data" title="Delete select torrents with Data"></a>
-		</div>-->
 	</body>
 </html>

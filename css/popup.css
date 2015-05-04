@@ -77,3 +77,73 @@ body {
 	bottom: 5px;
 	right: 5px;
 }
+
+
+.progress_bar span {
+	color: #FFF;
+	display: block;
+	font-size: 0.9em;
+	font-family: Verdana;
+	text-align: center;
+	width: 100%;
+	line-height: 20px;
+	position: absolute;
+	left: 0;
+	top: 0;
+	text-shadow: 0px 0px 3px #000, 0px 0px 3px #000, 0px 0px 3px #000;
+}
+
+.progress_bar {
+	background: #CCC;
+	position: relative;
+	width: 100%;
+}
+
+.progress_bar .inner {
+	height: 17px;
+	width: 0%;
+	text-align: center;
+}
+
+.progress_bar .inner.Queued {	/* Queued is yellowish */
+	background: linear-gradient(to bottom, #D9D300 50%, #BFBA14 50%, #D9D300);
+	border: 1px solid #ACA712;
+	border-right: none;
+}
+.progress_bar .inner.Queued.finished {
+	border: 1px solid #ACA712;
+}
+
+.progress_bar .inner.Paused {	/* Paused is grey */
+	background: linear-gradient(to bottom, #C0C0C0 50%, #9A9A9A 50%, #C0C0C0);
+	border: 1px solid #8B8B8B;
+	border-right: none;
+}
+.progress_bar .inner.Paused.finished {
+	border: 1px solid #8B8B8B;
+}
+
+.progress_bar .inner.Downloading {	/* Downloading is green */
+	background: linear-gradient(to bottom, #45E25D 50%, #3EC953 50%, #45E25D);
+	border: 1px solid #29AD35;
+	border-right: none;
+}
+
+.progress_bar .inner.Seeding {	/* Seeding is blue */
+	background: linear-gradient(to bottom, #A7BFCA 50%, #80A3B2 50%, #A7BFCA);
+	border: 1px solid #8B8B8B;
+}
+
+
+.delete-options .rm_cancel {
+	background: url(/themes/standard/images/cancel.png) no-repeat left top;
+}
+
+.delete-options .rm_torrent_data {
+	background: url(/themes/standard/images/trash.png) no-repeat left top;
+}
+
+.delete-options .rm_torrent {
+	background: url(/themes/standard/images/database.png) no-repeat left top;
+}
+

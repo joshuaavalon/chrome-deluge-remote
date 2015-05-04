@@ -14,38 +14,6 @@ a {
 	text-decoration: none;
 }
 
-.progress_bar {
-	border-radius: 5px;
-	-webkit-border-radius: 5px;
-	background: #CCC;
-	border: 1px solid #222;
-	position: relative;
-	/*width: 140px;*/
-	width: 100%;
-}
-
-.progress_bar .inner {
-	/*background: #4A7C91 url(../images/progress_bar.png) repeat-x top left;*/
-	background: linear-gradient(to bottom, #A7BFCA, #4A7C91);
-	height: 16px;
-	width: 0%;
-	text-align: center;
-}
-
-.progress_bar span {
-	color: #FFF;
-	display: block;
-	font-size: 0.9em;
-	font-family: Verdana;
-	text-align: center;
-	width: 100%;
-	line-height: 16px;
-	position: absolute;
-	left: 0;
-	top: 0;
-	text-shadow: 0px 0px 3px #000, 0px 0px 3px #000, 0px 0px 3px #000;
-}
-
 #overlay, .dialog {
 	background: rgba(0, 0, 0, 0.9);
 	display: none;
@@ -250,18 +218,6 @@ table#torrent_table tbody tr td {
 
 .table_cell_actions a.unmanaged {
 	background-position: 0 0;
-}
-
-.delete-options a.cancel {
-	background: url(/themes/standard/images/cancel.png) no-repeat left top;
-}
-
-.delete-options a.data {
-	background: url(/themes/standard/images/trash.png) no-repeat left top;
-}
-
-.delete-options a.torrent {
-	background: url(/themes/standard/images/database.png) no-repeat left top;
 }
 
 a:hover {

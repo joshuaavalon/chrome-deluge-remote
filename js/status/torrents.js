@@ -9,44 +9,44 @@ var Torrents = (function ($) {
 
 	function sortCallback(a, b) {
 		switch (localStorage.sortColumn) {
-		case 'name':
-			a = a.name;
-			b = b.name;
-			break;
+			case 'name':
+				a = a.name;
+				b = b.name;
+				break;
 
-		case 'size':
-			a = a.size;
-			b = b.size;
-			break;
+			case 'size':
+				a = a.size;
+				b = b.size;
+				break;
 
-		case 'progress':
-			a = a.progress;
-			b = b.progress;
-			break;
+			case 'progress':
+				a = a.progress;
+				b = b.progress;
+				break;
 
-		case 'speed':
-			a = a.speed;
-			b = b.speed;
-			break;
+			case 'speed':
+				a = a.speed;
+				b = b.speed;
+				break;
 
-		case 'eta':
-			a = a.eta;
-			b = b.eta;
-			break;
+			case 'eta':
+				a = a.eta;
+				b = b.eta;
+				break;
 
-		case 'position':
-			a = a.position;
-			b = b.position;
-			break;
+			case 'position':
+				a = (a.position == -1) ? 999 : a.position;
+				b = (b.position == -1) ? 999 : b.position;
+				break;
 
-		// Sort by queue asc if nothing is already set.
-		default:
-			a = a.position;
-			b = b.position;
-			// Set them for future use.
-			localStorage.sortColumn = 'position';
-			localStorage.sortMethod = 'asc';
-			break;
+			// Sort by queue asc if nothing is already set.
+			default:
+				a = a.position;
+				b = b.position;
+				// Set them for future use.
+				localStorage.sortColumn = 'position';
+				localStorage.sortMethod = 'asc';
+				break;
 		}
 
 		if (a < b) {
@@ -134,7 +134,7 @@ var Torrents = (function ($) {
 				if (localStorage.sortMethod === 'desc') {
 					torrents.reverse();
 				}
-				if (Global.getDebugMode()) {
+				if (localStorage.debugMode.toBoolean()) {
 					console.log(torrents);
 				}
 			});
