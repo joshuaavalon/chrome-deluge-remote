@@ -2,66 +2,21 @@
  * Module responsible for fetching, storing and sorting torrent objects.
  */
 var Torrents = (function ($) {
-	var pub = {}
+	var pub = {};
 		// Stores all torrent data, using array so it can be sorted.
-		, torrents = []
-		, globalInformation = {};
-
-	function sortCallback(a, b) {
-		switch (localStorage.sortColumn) {
-			case 'name':
-				a = a.name;
-				b = b.name;
-				break;
-
-			case 'size':
-				a = a.size;
-				b = b.size;
-				break;
-
-			case 'progress':
-				a = a.progress;
-				b = b.progress;
-				break;
-
-			case 'speed':
-				a = a.speed;
-				b = b.speed;
-				break;
-
-			case 'eta':
-				a = a.eta;
-				b = b.eta;
-				break;
-
-			case 'position':
-				a = (a.position == -1) ? 999 : a.position;
-				b = (b.position == -1) ? 999 : b.position;
-				break;
-
-			// Sort by queue asc if nothing is already set.
-			default:
-				a = a.position;
-				b = b.position;
-				// Set them for future use.
-				localStorage.sortColumn = 'position';
-				localStorage.sortMethod = 'asc';
-				break;
-		}
-
-		if (a < b) {
-			return -1;
-		}
-		if (a > b) {
-			return 1;
-		}
-
-		return 0;
-	}
+	var torrents = [];
+	var globalInformation = {};
 
 	pub.getAll = function () {
 		return torrents;
 	};
+
+	//Sorts the torrents.
+	// Can sort by name, size, progress, speed, eta, position
+	pub.sort = function(by, invert) {
+		torrents.sortByParameter(by, invert);
+		return this;
+	}
 
 	pub.getById = function (val) {
 		var i;
@@ -87,7 +42,7 @@ var Torrents = (function ($) {
 
 	pub.update = function () {
 		var that = this;
-		var api = Deluge.api('web.update_ui', [[
+		var api = Deluge.api("web.update_ui", [[
 				"queue",
 				"name",
 				"total_size",
@@ -143,7 +98,7 @@ var Torrents = (function ($) {
 							text = (text == "" ? "<blank>" : text);
 							text += " (" + response.filters[id][i][1] + ")";
 
-							$("#filter_"+id).append($('<option>', {
+							$("#filter_"+id).append($("<option>", {
 								value: response.filters[id][i][0],
 								text: text
 							}));
@@ -155,11 +110,6 @@ var Torrents = (function ($) {
 
 				response = null;
 
-				// Sort the torrents.
-				torrents.sort(sortCallback);
-				if (localStorage.sortMethod === 'desc') {
-					torrents.reverse();
-				}
 				if (localStorage.debugMode.toBoolean()) {
 					console.log(torrents);
 				}

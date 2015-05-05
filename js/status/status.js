@@ -125,9 +125,15 @@ $(function() {
 	}
 
 	function renderTable() {
-		// Fetch new information.
-		var torrents = Torrents.getAll();
+		//clear the table
 		$("#torrent_container").empty();
+
+		//sort the torrents - the extra sorts help to group things nicely
+		var torrents = Torrents.sort("state").sort("name").sort(localStorage.sortColumn).getAll();
+		if (localStorage.sortMethod === "desc") {
+			torrents.reverse();
+		}
+
 		for (var i = 0; i < torrents.length ; i++) {
 			var torrent = torrents[i];
 
@@ -359,13 +365,13 @@ $(function() {
 
 		$("#sort").on("change", function () {
 			localStorage.sortColumn = $(this).val();
-			updateTable();
+			renderTable();
 		});
 
 		$("#sort_invert").on("change", function () {
 			console.log($(this).is(":checked"));
 			localStorage.sortMethod = ($(this).is(":checked")) ? "desc" : "asc";
-			updateTable();
+			renderTable();
 		});
 
 		$("#filter_state, #filter_tracker_host, #filter_label").on("change", function () {
