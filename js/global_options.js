@@ -7,6 +7,6 @@ chrome.storage.sync.get(function(items) {
 //Listen for changes
 chrome.storage.onChanged.addListener(function(changes, namespace) {
 	for (key in changes) {
-		options[key] = storageChange.newValue;
+		options[key] = changes[key].newValue;
 	}
 });
