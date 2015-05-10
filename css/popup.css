@@ -191,7 +191,7 @@ body {
 	border: 1px solid #8B8B8B;
 }
 
-.progress_bar .inner.Rechecking {	/* Checking is grey */
+.progress_bar .inner.Checking {	/* Checking is grey */
 	background: linear-gradient(to bottom, #ADADAD 50%, #999999 50%, #ADADAD);
 	border: 1px solid #8A8A8A;
 }
