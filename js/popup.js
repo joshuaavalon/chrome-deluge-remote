@@ -14,7 +14,6 @@ $(function() {
 		// Set the initial height for the overlay.
 	var $overlay = $("#overlay").css({ height: $(document).height() });
 
-
 	// Setup timer information.
 	const REFRESH_INTERVAL = 30000;
 	var refreshTimer = Timer(REFRESH_INTERVAL);
@@ -112,7 +111,7 @@ $(function() {
 		var information = Torrents.getGlobalInformation();
 		$globalInformation = $("#global-information");
 
-		if (localStorage.debugMode.toBoolean()) {
+		if (options.debug_mode) {
 			console.log(Torrents);
 			console.log(information);
 		}
@@ -125,6 +124,10 @@ $(function() {
 	}
 
 	function renderTable() {
+
+		//Set the href for the title, because otherwise the options doesn't exist early enough
+		$("#deluge_webui_link").attr("href", options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/");
+
 		//clear the table
 		$("#torrent_container").empty();
 
@@ -212,14 +215,14 @@ $(function() {
 
 			Deluge.api(method, actions)
 				.success(function (data, textStatus, jqXHR) {
-					if (localStorage.debugMode.toBoolean()) {
+					if (options.debug_mode) {
 						console.log(methods_messages[method].success);
 					}
 					console.log("action sent");
 					updateTableDelay(250);
 				})
 				.error(function () {
-					if (localStorage.debugMode.toBoolean()) {
+					if (options.debug_mode) {
 						console.log(methods_messages[method].failure);
 					}
 				});
@@ -356,7 +359,7 @@ $(function() {
 	}());
 
 	$(function() {
-		$("#sort").val(localStorage.sortColumn);
+		$("#sort").val(localStorage.sortColumn || "position");
 		$("#sort_invert").attr("checked", (localStorage.sortMethod == "desc") );
 
 		$("#filter_state").val(localStorage["filter_state"] || "All");
@@ -423,7 +426,7 @@ $(function() {
 	// timers within this script handle table updating.
 	function activated() {
 		if (!extensionActivated) {
-			if (localStorage.debugMode.toBoolean()) {
+			if (options.debug_mode) {
 				console.log("Deluge: ACTIVATED");
 			}
 			extensionActivated = true;
@@ -445,7 +448,7 @@ $(function() {
 	// Setup listeners for closing message overlays coming from background.
 	chrome.extension.onRequest.addListener(
 		function (request, sender, sendResponse) {
-			if (localStorage.debugMode.toBoolean()) {
+			if (options.debug_mode) {
 				console.log(request.msg);
 			}
 			if (request.msg === "extension_activated") {
@@ -458,7 +461,6 @@ $(function() {
 		}
 	);
 
-	$("#deluge_webui_link").attr("href", localStorage.delugeAddress);
 	// Do initial check.
 	checkStatus();
 });

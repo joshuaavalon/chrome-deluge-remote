@@ -4,6 +4,20 @@ var Background = (function($) {
 	var statusTimer = null;
 	var contextMenu = null;
 
+	//All options are stored in an object
+	var options = {};
+	//Load the options
+	chrome.storage.sync.get(function(items) {
+		options = items;
+	});
+	//Listen for changes
+	chrome.storage.onChanged.addListener(function(changes, namespace) {
+		for (key in changes) {
+			options[key] = storageChange.newValue;
+		}
+	});
+
+
 	/*
 	 * Intervals used for status checking.
 	 * If an error occurs when checking the status then increase how often
@@ -19,13 +33,13 @@ var Background = (function($) {
 		// Attempt start the Daemon if not already.
 		var deferred = $.Deferred(function (d) {
 			// Find the current status of the daemon.
-			Deluge.api('web.get_host_status', [hostId])
+			Deluge.api("web.get_host_status", [hostId])
 				.success(function (response) {
-					if (response && response[3] === 'Offline') {
-						Deluge.api('web.start_daemon', [response[2]])
+					if (response && response[3] === "Offline") {
+						Deluge.api("web.start_daemon", [response[2]])
 							.success(function (response) {
-								if (localStorage.debugMode.toBoolean()) {
-									console.log('Daemon started');
+								if (options.debug_mode) {
+									console.log("Daemon started");
 								}
 								// Give the Daemon a few seconds to start.
 								setTimeout(function () { d.resolve(); }, 2000);
@@ -35,8 +49,8 @@ var Background = (function($) {
 					}
 				})
 				.error(function () {
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('Deluge: Error getting host status');
+					if (options.debug_mode) {
+						console.log("Deluge: Error getting host status");
 					}
 					d.reject();
 				});
@@ -50,33 +64,41 @@ var Background = (function($) {
 	 */
 	function autoLoginFailed() {
 		// Inform anyone who's listening.
-		chrome.extension.sendRequest({ msg: 'auto_login_failed' });
+		chrome.extension.sendRequest({ msg: "auto_login_failed" });
+	}
+
+	function badgeText(text, colour) {
+		chrome.browserAction.setBadgeText({text: text});
+		chrome.browserAction.setBadgeBackgroundColor({color: colour});
+		setTimeout(function(){
+			chrome.browserAction.setBadgeText({text: ""});
+		}, options.badge_timeout);
 	}
 
 	/*
 	 * If we have login details perform a login to the Deluge webUI.
 	 */
 	pub.login = function () {
-		return Deluge.api('auth.login', [localStorage.delugePassword]);
+		return Deluge.api("auth.login", [options.password]);
 	};
 
 	pub.connect = function () {
 		// Find a list of hosts; if we only have one option connect to it,
 		// otherwise do nothing, as we can't handle these at the moment.
 		var deferred = $.Deferred(function (d) {
-			Deluge.api('web.get_hosts')
+			Deluge.api("web.get_hosts")
 				.success(function (response) {
 					// Only one host found.
 					if (response.length === 1) {
 						var hostId = response[0][0];
 						// Check the daemon is running and then try connecting.
 						startDaemon(hostId).done(function () {
-							Deluge.api('web.connect', [hostId])
+							Deluge.api("web.connect", [hostId])
 								.success(function () { d.resolve(); })
 								.error(function () { d.reject(); });
 						});
 					} else {
-						d.reject({ error: 'More than one host' });
+						d.reject({ error: "More than one host" });
 					}
 				});
 		})
@@ -93,14 +115,14 @@ var Background = (function($) {
 	 * @return API promise - can attach additional success/error callbacks.
 	 * */
 	pub.checkStatus = function (options) {
-		if (localStorage.debugMode.toBoolean()) {
-			console.log('Deluge: Checking status');
+		if (options.debug_mode) {
+			console.log("Deluge: Checking status");
 		}
 
 		// Clear any existing timers.
 		clearTimeout(statusTimer);
 
-		var api = Deluge.api('web.connected', [], options)
+		var api = Deluge.api("web.connected", [], options)
 			.success(function (response) {
 				// Connected: activate the extension.
 				if (response === true) {
@@ -129,8 +151,8 @@ var Background = (function($) {
 								} else {
 									// Wrong login - not much we can do, try
 									// checking in a bit.
-									if (localStorage.debugMode.toBoolean()) {
-										console.log('Deluge: Incorrect login details.');
+									if (options.debug_mode) {
+										console.log("Deluge: Incorrect login details.");
 									}
 									statusTimer = setTimeout(check_status, STATUS_CHECK_ERROR_INTERVAL);
 									pub.deactivate();
@@ -138,14 +160,14 @@ var Background = (function($) {
 								}
 							})
 							.error(function (jqXHR, text, err) {
-								if (localStorage.debugMode.toBoolean()) {
-									console.log('Deluge: Error logging in');
+								if (options.debug_mode) {
+									console.log("Deluge: Error logging in");
 								}
 								pub.deactivate();
 							});
 					} else {
-						if (localStorage.debugMode.toBoolean()) {
-							console.log('Deluge: API error occured');
+						if (options.debug_mode) {
+							console.log("Deluge: API error occured");
 						}
 						// Unknown API error, deactivate the extension.
 						pub.deactivate();
@@ -156,8 +178,8 @@ var Background = (function($) {
 					// Unknown error (resulting from 500/400 status codes
 					// normally); best thing to do is check again, but with a
 					// longer interval.
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('Deluge: Unknown error occured');
+					if (options.debug_mode) {
+						console.log("Deluge: Unknown error occured");
 					}
 					statusTimer = setTimeout(pub.checkStatus, STATUS_CHECK_ERROR_INTERVAL);
 					pub.deactivate();
@@ -174,15 +196,15 @@ var Background = (function($) {
 	 * successfully.
 	 */
 	pub.activate = function () {
-		if (localStorage.debugMode.toBoolean()) {
-			console.log('Deluge: Extension activated');
+		if (options.debug_mode) {
+			console.log("Deluge: Extension activated");
 		}
-		chrome.browserAction.setIcon({path: 'images/icons/deluge_active.png'});
+		chrome.browserAction.setIcon({path: "images/icons/deluge_active.png"});
 		chrome.browserAction.setTitle({
-			title: chrome.i18n.getMessage('browser_title')
+			title: chrome.i18n.getMessage("browser_title")
 		});
 		// Send activation to anything listening.
-		chrome.extension.sendRequest({ msg: 'extension_activated' });
+		chrome.extension.sendRequest({ msg: "extension_activated" });
 	};
 
 	/* Disables the extension (status messages, disabling icons, etc..).
@@ -190,15 +212,15 @@ var Background = (function($) {
 	 * This is normally called after doing a status check, which returned false.
 	 */
 	pub.deactivate = function () {
-		if (localStorage.debugMode.toBoolean()) {
-			console.log('Deluge: Extension deactivated');
+		if (options.debug_mode) {
+			console.log("Deluge: Extension deactivated");
 		}
-		chrome.browserAction.setIcon({path: 'images/icons/deluge.png'});
+		chrome.browserAction.setIcon({path: "images/icons/deluge.png"});
 		chrome.browserAction.setTitle({
-			title: chrome.i18n.getMessage('browser_title_disabled')
+			title: chrome.i18n.getMessage("browser_title_disabled")
 		});
 		// Send deactivation to anything listening.
-		chrome.extension.sendRequest({ msg: 'extension_deactivated' });
+		chrome.extension.sendRequest({ msg: "extension_deactivated" });
 	};
 
 	/**
@@ -221,74 +243,77 @@ var Background = (function($) {
 			 * @param {Object} options The options for the torrent (download_path, max_connections, etc...).
 			 */
 			function addToDeluge(options) {
-				Deluge.api('web.add_torrents', [[{'path': tmpTorrent, 'options': options}]])
+				Deluge.api("web.add_torrents", [[{"path": tmpTorrent, "options": options}]])
 					.success(function (obj) {
 						if (obj) {
-							if (localStorage.debugMode.toBoolean()) {
-								console.log('deluge: added torrent to deluge.');
+							if (options.debug_mode) {
+								console.log("deluge: added torrent to deluge.");
 							}
-							sendResponse({msg: 'success', result: obj, error: null});
+							badgeText("Add", "#00FF00");
+							sendResponse({msg: "success", result: obj, error: null});
 							return;
 						}
-						if (localStorage.debugMode.toBoolean()) {
-							console.log('deluge: unable to add torrent to deluge.');
+						badgeText("Fail", "#FF0000");
+						if (options.debug_mode) {
+							console.log("deluge: unable to add torrent to deluge.");
 						}
-						sendResponse({msg: 'error', result: null, error: 'unable to add torrent to deluge'});
+						sendResponse({msg: "error", result: null, error: "unable to add torrent to deluge"});
 					})
 					.error(function (req, status, err) {
-						if (localStorage.debugMode.toBoolean()) {
-							console.log('deluge: unable to add torrent to deluge.');
+						if (options.debug_mode) {
+							console.log("deluge: unable to add torrent to deluge.");
 						}
-						sendResponse({msg: 'error', result: null, error: 'unable to add torrent to deluge'});
+						badgeText("Fail", "#FF0000");
+						sendResponse({msg: "error", result: null, error: "unable to add torrent to deluge"});
 					});
 			}
 
 			// Need to get config values to add with the torrent first.
-			Deluge.api('core.get_config_values', [['add_paused', 'compact_allocation', 'download_location',
-				'max_connections_per_torrent', 'max_download_speed_per_torrent',
-				'max_upload_speed_per_torrent', 'max_upload_slots_per_torrent',
-				'prioritize_first_last_pieces']])
+			Deluge.api("core.get_config_values", [["add_paused", "compact_allocation", "download_location",
+				"max_connections_per_torrent", "max_download_speed_per_torrent",
+				"max_upload_speed_per_torrent", "max_upload_slots_per_torrent",
+				"prioritize_first_last_pieces"]])
 				.success(function (obj) {
 					if (obj) {
-						if (localStorage.debugMode.toBoolean()) {
-							console.log('deluge: got options!');
+						if (options.debug_mode) {
+							console.log("deluge: got options!");
 						}
 						addToDeluge(obj);
 						return;
 					}
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('deluge: unable to fetch options.');
+					if (options.debug_mode) {
+						console.log("deluge: unable to fetch options.");
 					}
-					sendResponse({msg: 'error', result: null, error: 'unable to fetch options.'});
+					sendResponse({msg: "error", result: null, error: "unable to fetch options."});
 				})
 				.error(function (req, status, err) {
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('deluge: unable to fetch options.');
+					if (options.debug_mode) {
+						console.log("deluge: unable to fetch options.");
 					}
-					sendResponse({msg: 'error', result: null, error: 'unable to fetch options.'});
+					sendResponse({msg: "error", result: null, error: "unable to fetch options."});
 				});
 		}
 
 		// First we need to download the torrent file to a temp location in Deluge.
-		Deluge.api('web.download_torrent_from_url', [request.url, ''])
+		Deluge.api("web.download_torrent_from_url", [request.url, ""])
 			.success(function (obj) {
 				if (obj) {
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('deluge: downloaded torrent.');
+					if (options.debug_mode) {
+						console.log("deluge: downloaded torrent.");
 					}
 					addTorrent(obj);
 					return;
 				}
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: failed to download torrent from URL, no obj or result.');
+				if (options.debug_mode) {
+					console.log("deluge: failed to download torrent from URL, no obj or result.");
 				}
-				sendResponse({msg: 'error', result: null, error: 'failed to download torrent from URL.'});
+				sendResponse({msg: "error", result: null, error: "failed to download torrent from URL."});
 			})
 			.error(function (req, status, err) {
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: failed to download torrent from URL.');
+				if (options.debug_mode) {
+					console.log("deluge: failed to download torrent from URL.");
 				}
-				sendResponse({msg: 'error', result: null, error: 'failed to download torrent from URL.'});
+				sendResponse({msg: "error", result: null, error: "failed to download torrent from URL."});
 			});
 	};
 
@@ -299,25 +324,28 @@ var Background = (function($) {
 	* @see chrome.extension.sendRequest && chrome.extension.onRequest
 	*/
 	pub.addTorrentFromMagnet = function (request, sender, sendResponse) {
-		Deluge.api('core.add_torrent_magnet', [request.url, ''])
+		Deluge.api("core.add_torrent_magnet", [request.url, ""])
 			.success(function (id) {
 				if (id) {
-					if (localStorage.debugMode.toBoolean()) {
-						console.log('deluge: downloaded torrent.');
+					if (options.debug_mode) {
+						console.log("deluge: downloaded torrent.");
 					}
-					sendResponse({msg: 'success', result: id, error: null});
+					badgeText("Add", "#00FF00");
+					sendResponse({msg: "success", result: id, error: null});
 					return;
 				}
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: failed to add torrent from magnet, no obj or result.');
+				if (options.debug_mode) {
+					console.log("deluge: failed to add torrent from magnet, no obj or result.");
 				}
-				sendResponse({msg: 'error', result: null, error: 'failed to add torrent from magnet.'});
+				badgeText("Fail", "#FF0000");
+				sendResponse({msg: "error", result: null, error: "failed to add torrent from magnet."});
 			})
 			.error(function (req, status, err) {
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: failed to add torrent from magnet.');
+				if (options.debug_mode) {
+					console.log("deluge: failed to add torrent from magnet.");
 				}
-				sendResponse({msg: 'error', result: null, error: 'failed to add torrent from magnet.'});
+				badgeText("Fail", "#FF0000");
+				sendResponse({msg: "error", result: null, error: "failed to add torrent from magnet."});
 			});
 	}
 	
@@ -325,31 +353,31 @@ var Background = (function($) {
 		var torrentUrl = OnClickData.linkUrl;
 		if (torrentUrl.search(/\/(download|get)\//) > 0 || torrentUrl.search(/\.torrent$/) > 0) {
 			Background.addTorrentFromUrl({url: torrentUrl}, [], function (response) {
-				if (response.msg === 'success') {
+				if (response.msg === "success") {
 					if (Global.getDebugMode) {
-						console.log('Deluge: Torrent added');
+						console.log("Deluge: Torrent added");
 					}
 				} else {
 					if (Global.getDebugMode) {
-						console.log('Deluge: Torrent could not be added');
+						console.log("Deluge: Torrent could not be added");
 					}
 				}
 			});
 		} else if (torrentUrl.search(/magnet:/) != -1) {
 			Background.addTorrentFromMagnet({url: torrentUrl}, [], function (response) {
-				if (response.msg === 'success') {
+				if (response.msg === "success") {
 					if (Global.getDebugMode) {
-						console.log('Deluge: Torrent added');
+						console.log("Deluge: Torrent added");
 					}
 				} else {
 					if (Global.getDebugMode) {
-						console.log('Deluge: Torrent could not be added');
+						console.log("Deluge: Torrent could not be added");
 					}
 				}
 			});
 		} else {
-			if (localStorage.debugMode.toBoolean()) {
-				console.log('Deluge: Link not a torrent!');
+			if (options.debug_mode) {
+				console.log("Deluge: Link not a torrent!");
 			}
 		}
 
@@ -381,25 +409,24 @@ var Background = (function($) {
 		}
 	};
 
-	//for some reason the context menu is always added regardless of the if
-	if (localStorage.contextMenu) {
+	if (options.context_menu) {
 		pub.addContextMenu();
 	} else {
 		pub.removeContextMenu();
 	}
-	
+
 	pub.getVersion = function(sendResponse) {
-		Deluge.api('daemon.info')
+		Deluge.api("daemon.info")
 			.success(function (version) {
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: got version.');
+				if (options.debug_mode) {
+					console.log("deluge: got version.");
 				}
-				version = version.split('-')[0].split('.');
+				version = version.split("-")[0].split(".");
 				sendResponse({major: Number(version[0]), minor: Number(version[1]), build: Number(version[2])});
 			})
 			.error(function (req, status, err) {
-				if (localStorage.debugMode.toBoolean()) {
-					console.log('deluge: failed to get version.');
+				if (options.debug_mode) {
+					console.log("deluge: failed to get version.");
 				}
 				sendResponse(0);
 			});
@@ -411,15 +438,6 @@ var Background = (function($) {
 // Run init stuff for the plugin.
 jQuery(document).ready(function ($) {
 	Background.checkStatus();
-	if (localStorage.deluge_address && !(localStorage.delugeAddress)) {
-		localStorage.delugeAddress = localStorage.deluge_address;
-	}
-	if (localStorage.deluge_password && !(localStorage.delugePassword)) {
-		localStorage.delugePassword = localStorage.deluge_password;
-	}
-	if (localStorage.deluge_download_icon && !(localStorage.delugeDownloadIcon)) {
-		localStorage.delugeDownloadIcon = localStorage.deluge_download_icon;
-	}
 });
 
 /*
@@ -429,22 +447,25 @@ jQuery(document).ready(function ($) {
 */
 
 // Any requests send via chrome ext messaging system.
-chrome.extension.onRequest.addListener(function (request, sender, sendResponse) {
+chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
 
-	if (request.msg === 'add_torrent_from_url') {
-		Background.addTorrentFromUrl(request, sender, sendResponse);
-		return;
-	} else if (request.msg === 'get_download_options') {
-		sendResponse({
-			'enable_deluge_icon': localStorage.delugeDownloadIcon
-			, 'enable_one_click_magnets': localStorage.oneClickMagnets
-			});
-		return;
-	} else if  (request.msg === 'add_torrent_from_magnet') {
-		Background.addTorrentFromMagnet(request, sender, sendResponse);
-		return;
+	switch(request.method) {
+		case "options":
+			sendResponse(
+				{
+					"value": options[request.key]
+				}
+			);
+			break;
+		case "add_torrent_from_url":
+			Background.addTorrentFromUrl(request, sender, sendResponse);
+			break;
+		case "add_torrent_from_magnet":
+			Background.addTorrentFromMagnet(request, sender, sendResponse);
+			break;
+		default:
+			sendResponse({msg: "error", result: null, error: "nothing called!"});
 	}
 
-	// We need to send a reponse, even if it's empty.
-	sendResponse({msg: 'error', result: null, error: 'nothing called!'});
 });
+

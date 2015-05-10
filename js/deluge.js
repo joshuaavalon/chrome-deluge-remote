@@ -2,7 +2,7 @@ var Deluge = (function (Deluge, $) {
 	Deluge = Deluge || {};
 
 	function endpoint() {
-		return localStorage.delugeAddress + '/json';
+		return options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/json";
 	}
 
 	// API Error Text Status.

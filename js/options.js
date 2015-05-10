@@ -1,86 +1,101 @@
 var background = chrome.extension.getBackgroundPage();
 
-function restoreOptions() {
-	$('#address').val(localStorage.delugeAddress);
-	$('#password').val(localStorage.delugePassword);
-	$('#handle_torrent_links').attr('checked', localStorage.delugeDownloadIcon.toBoolean());
-	$('#handle_magnet_links').attr('checked', localStorage.oneClickMagnets.toBoolean());
-	$('#enable_context_menu').attr('checked', localStorage.contextMenu.toBoolean());
-	$('#enable_debug_mode').attr('checked', localStorage.debugMode.toBoolean());
-}
-
 function saveOptions() {
-	var addressVal				= $('#address').val();
-	var passwordVal				= $('#password').val();
-	var handleTorrentLinks		= $('#handle_torrent_links').is(':checked');
-	var handleMagnetLinks		= $('#handle_magnet_links').is(':checked');
-	var contextMenuEnabled		= $('#enable_context_menu').is(':checked');
-	var debugMode				= $('#enable_debug_mode').is(':checked');
-
-	var messages				= [];
-	var messageText				= '';
-
-	if (addressVal) {
-		addressVal = addressVal.replace(/\/$/, '');
-		if (localStorage.delugeAddress != addressVal) {
-			messages.push('Address updated.');
-			localStorage.delugeAddress = addressVal;
+	chrome.storage.sync.set(
+		{
+			"address_protocol":		$("#address_protocol").val(),
+			"address_ip":			$("#address_ip").val(),
+			"address_port":			$("#address_port").val(),
+			"password":				$("#password").val(),
+			"handle_torrents":		$("#handle_torrents").is(":checked"),
+			"handle_magnets":		$("#handle_magnets").is(":checked"),
+			"context_menu":			$("#context_menu").is(":checked"),
+			"badge_timeout":		parseInt($("#badge_timeout").val()),
+			"debug_mode":			$("#debug_mode").is(":checked")
+		},
+		function() {
+			console.log("Settings saved");
 		}
-	}
-
-	if (passwordVal && localStorage.delugePassword != passwordVal) {
-		messages.push('Password updated.');
-		localStorage.delugePassword = passwordVal;
-	}
-
-	if (String(handleTorrentLinks) != localStorage.delugeDownloadIcon) {
-		messages.push("Download torrent icon " + ((handleTorrentLinks) ? "en" : "dis") + "abled!");
-		localStorage.delugeDownloadIcon = handleTorrentLinks;
-	}
-
-	if (String(handleMagnetLinks) != localStorage.oneClickMagnets) {
-		messages.push("One click magnet downloads " + ((handleMagnetLinks) ? "en" : "dis") + "abled!");
-		localStorage.oneClickMagnets = handleMagnetLinks;
-	}
-
-	if (String(contextMenuEnabled) != localStorage.contextMenu) {
-		messages.push("Context Menu " + ((contextMenuEnabled) ? "en" : "dis") + "abled!");
-		localStorage.contextMenu = contextMenuEnabled
-	}
-
-	background.Background.ContextMenu(contextMenuEnabled);
-
-	if (String(debugMode) !== localStorage.debugMode) {
-		messages.push("Debug mode " + ((debugMode) ? "en" : "dis") + "abled!");
-		localStorage.debugMode = debugMode;
-	}
-
-	background.Background.checkStatus();
-
-	if (debugMode) {
-		console.log('Deluge: options saved!');
-	}
-
-	if (messages.length > 0) {
-		$.each(messages, function (index, obj) {
-			messageText += obj + '<br>';
-		});
-		messageText += "<br>";
-		$('#status-message').finish();
-		$('#status-message').html(messageText).fadeIn().delay(5000).fadeOut();
-	}
+	);
 }
 
 $(function() {
-	$('.buttons .save').on('click', function () {
+	$(".buttons .save").on("click", function () {
 		saveOptions();
 		window.close();
 	});
-	$('.buttons .apply').on('click', function () {
+	$(".buttons .apply").on("click", function () {
 		saveOptions();
 	});
-	$('.buttons .cancel').on('click', function () {
+	$(".buttons .cancel").on("click", function () {
 		window.close();
 	});
 	restoreOptions();
+	$("#version").text(chrome.runtime.getManifest().version);
+});
+
+chrome.storage.onChanged.addListener(function(changes, namespace) {
+	var messages = [];
+	for (key in changes) {
+		var storageChange = changes[key];
+		console.log('Storage key "%s" in namespace "%s" changed. Old value was "%s", new value is "%s".',
+			key,
+			namespace,
+			storageChange.oldValue,
+			storageChange.newValue
+		);
+		switch (key) {
+			case "address_protocol":
+				messages.push("Address protocol updated.");
+				break;
+			case "address_ip":
+				messages.push("Address IP updated.");
+				break;
+			case "address_port":
+				messages.push("Address port updated.");
+				break;
+			case "password":
+				messages.push("Password updated.");
+				break;
+			case "handle_torrents":
+				var handle_torrents = $("#handle_torrents").is(":checked");
+				messages.push("Download torrent icon " + ((handle_torrents) ? "en" : "dis") + "abled!");
+				break;
+			case "handle_magnets":
+				var handle_magnets = $("#handle_magnets").is(":checked");
+				messages.push("One click magnet downloads " + ((handle_magnets) ? "en" : "dis") + "abled!");
+				break;
+			case "context_menu":
+				var context_menu = $("#context_menu").is(":checked");
+				messages.push("Context Menu " + ((context_menu) ? "en" : "dis") + "abled!");
+				background.Background.ContextMenu(context_menu);
+				break;
+			case "badge_timeout":
+				messages.push("Badge timeout set to " + $("#badge_timeout option:selected").text());
+				break;
+			case "debug_mode":
+				var debug_mode = $("#debug_mode").is(":checked")
+				messages.push("Debug mode " + ((debug_mode) ? "en" : "dis") + "abled!");
+				break;
+		}
+	}
+	if (messages.length > 0) {
+		var messageText = "";
+		$.each(messages, function (index, obj) {
+			messageText += obj + "<br>";
+		});
+		messageText += "<br>";
+		$("#status-message").finish();
+		$("#status-message").html(messageText).fadeIn().delay(5000).fadeOut();
+	}
+});
+
+chrome.storage.sync.get(function(items) {
+	for (var i in items) {
+		console.log(i + "\t" + items[i] + "\t" + (typeof items[i]));
+		$("#"+i).val(items[i]);
+		if (typeof items[i] === "boolean") {
+			$("#"+i).attr("checked", items[i]);
+		}
+	}
 });

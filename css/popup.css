@@ -3,13 +3,46 @@ html {
 }
 
 body {
-	color: #373737;
+	width: 558px;
 	font-family: "MS Trebuchet", Arial, Helvetica, sans-serif;
 	font-size: 62.5%;
-	margin: 0;
-	min-height: 200px;
-	width: 558px;
-	overflow-x: hidden;
+}
+
+#overlay, .dialog {
+	background: rgba(0, 0, 0, 0.9);
+	display: none;
+	font-size: 1.2em;
+	height: 100%;
+	left: 0;
+	position: absolute;
+	width: 100%;
+	top: 0;
+	z-index: 999;
+}
+
+#overlay .overlay_inner {
+	background: #F5A5A5;
+	border-bottom-left-radius: 5px;
+	border-bottom-right-radius: 5px;
+	display: table;
+ /* Allows us to shrink to content and centre with auto margin */
+	line-height: 16px;
+	margin: 0 auto;
+	padding: 1em;
+	vertical-align: middle;
+}
+
+#overlay .overlay_inner span {
+	vertical-align: middle;
+}
+
+#overlay .overlay_inner .error {
+	background: url(/themes/standard/images/error.png) no-repeat left top;
+	display: inline-block;
+	height: 24px;
+	line-height: 24px;
+	padding-left: 35px;
+	vertical-align: middle;
 }
 
 #global-information {

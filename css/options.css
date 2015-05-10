@@ -1,0 +1,40 @@
+body {
+	width: 100%;
+	color: #000000;
+}
+
+#content {
+	width: 700px;
+	margin-left: auto;
+	margin-right: auto;
+	border: 1px solid #CCC;
+	padding: 5px;
+}
+#options {
+	width: 600px;
+	margin: 0 auto;
+}
+
+#options fieldset {
+	margin-left: auto;
+	margin-right: auto;
+}
+label span {
+	font-size: 75%;
+}
+
+table tr td:nth-child(1) {
+	width: 150px;
+	padding-right: 5px;
+	text-align: right;
+}
+
+.buttons {
+	margin-top: 10px;
+}
+.buttons .left {
+	float: left;
+}
+.buttons .right {
+	float: right;
+}
