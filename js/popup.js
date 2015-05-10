@@ -65,6 +65,7 @@ $(function() {
 				$(document.createElement("a")).addClass("move_down").prop("title", "Move Torrent Down"),
 				// Auto managed options.
 				$(document.createElement("a")).addClass("toggle_managed").addClass(managed).prop("title", "Toggle Auto-managed State"),
+				$(document.createElement("a")).addClass("force_recheck").prop("title", "Force re-check data"),
 				// Delete.
 				$(document.createElement("a")).addClass("delete").prop("title", "Delete Options")
 			);
@@ -77,7 +78,6 @@ $(function() {
 	function updateTable() {
 		// Clear out any existing timers.
 		refreshTimer.unsubscribe();
-		console.log("updating");
 		Torrents.update()
 			.success(function () {
 				renderTable();
@@ -201,7 +201,8 @@ $(function() {
 				"core.queue_up":					{success: "Deluge: Moved torrent up queue",		failure: "Deluge: Failed to move torrent up queue."},
 				"core.queue_down":					{success: "Deluge: Moved torrent down queue",	failure: "Deluge: Failed to move torrent down queue."},
 				"core.set_torrent_auto_managed":	{success: "Deluge: Toggled auto-managed.",		failure: "Deluge: Failed to toggle auto-managed."},
-				"core.remove_torrent":				{success: "Deluge: Deleted torrent.",			failure: "Deluge: Failed to delete torrent."}
+				"core.remove_torrent":				{success: "Deluge: Deleted torrent.",			failure: "Deluge: Failed to delete torrent."},
+				"core.force_recheck":				{success: "Deluge: Force rechecking torrent.",	failure: "Deluge: Failed to force recheck torrent."}
 			};
 
 			var actions;
@@ -218,7 +219,6 @@ $(function() {
 					if (options.debug_mode) {
 						console.log(methods_messages[method].success);
 					}
-					console.log("action sent");
 					updateTableDelay(250);
 				})
 				.error(function () {
@@ -240,6 +240,8 @@ $(function() {
 				method = "core.queue_down";
 			} else if ($(this).hasClass("toggle_managed")) {
 				method = "core.set_torrent_auto_managed";
+			} else if ($(this).hasClass("force_recheck")) {
+				method = "core.force_recheck";
 			} else if ($(this).hasClass("rm_torrent_data")) {
 				method = "core.remove_torrent";
 				rmdata = true;

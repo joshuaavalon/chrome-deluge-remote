@@ -191,6 +191,12 @@ body {
 	border: 1px solid #8B8B8B;
 }
 
+.progress_bar .inner.Rechecking {	/* Checking is grey */
+	background: linear-gradient(to bottom, #ADADAD 50%, #999999 50%, #ADADAD);
+	border: 1px solid #8A8A8A;
+}
+
+
 
 .table_cell_actions a {
 	border: 0;
@@ -222,6 +228,10 @@ body {
 
 .table_cell_actions .unmanaged {
 	background: url(/images/manage.png) no-repeat top left;
+}
+
+.table_cell_actions .force_recheck {
+	background: url(/images/recheck.png) no-repeat top left;
 }
 
 .table_cell_actions .delete {
