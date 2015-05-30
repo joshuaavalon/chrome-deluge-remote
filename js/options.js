@@ -6,6 +6,7 @@ function saveOptions() {
 			"address_protocol":		$("#address_protocol").val(),
 			"address_ip":			$("#address_ip").val(),
 			"address_port":			$("#address_port").val(),
+			"address_base":			$("#address_base").val(),
 			"password":				$("#password").val(),
 			"handle_torrents":		$("#handle_torrents").is(":checked"),
 			"handle_magnets":		$("#handle_magnets").is(":checked"),
@@ -53,6 +54,9 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 				break;
 			case "address_port":
 				messages.push("Address port updated.");
+				break;
+			case "address_base":
+				messages.push("Address base updated.");
 				break;
 			case "password":
 				messages.push("Password updated.");

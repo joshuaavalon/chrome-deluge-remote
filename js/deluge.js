@@ -2,7 +2,7 @@ var Deluge = (function (Deluge, $) {
 	Deluge = Deluge || {};
 
 	function endpoint() {
-		return options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/json";
+		return options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/" + options.address_base + "json";
 	}
 
 	// API Error Text Status.
