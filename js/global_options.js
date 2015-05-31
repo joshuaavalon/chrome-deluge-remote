@@ -1,5 +1,7 @@
 //All options are stored in an object
-var options = {};
+var options = {
+	debug_mode: false
+};
 //Load the options
 chrome.storage.sync.get(function(items) {
 	options = items;

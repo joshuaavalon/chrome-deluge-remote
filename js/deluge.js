@@ -24,9 +24,9 @@ var Deluge = (function (Deluge, $) {
 				url: endpoint(),
 				type: 'POST',
 				dataType: 'json'
-			}
+			};
 				// Extend default with any user passed options.
-				, settings = $.extend({}, defaults, options);
+			var settings = $.extend({}, defaults, options);
 
 			// Create the API call data.
 			settings.data = JSON.stringify({

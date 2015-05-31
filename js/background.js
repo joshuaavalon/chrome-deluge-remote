@@ -4,20 +4,6 @@ var Background = (function($) {
 	var statusTimer = null;
 	var contextMenu = null;
 
-	//All options are stored in an object
-	var options = {};
-	//Load the options
-	chrome.storage.sync.get(function(items) {
-		options = items;
-	});
-	//Listen for changes
-	chrome.storage.onChanged.addListener(function(changes, namespace) {
-		for (key in changes) {
-			options[key] = storageChange.newValue;
-		}
-	});
-
-
 	/*
 	 * Intervals used for status checking.
 	 * If an error occurs when checking the status then increase how often
@@ -114,7 +100,7 @@ var Background = (function($) {
 	 *
 	 * @return API promise - can attach additional success/error callbacks.
 	 * */
-	pub.checkStatus = function (options) {
+	pub.checkStatus = function (params) {
 		if (options.debug_mode) {
 			console.log("Deluge: Checking status");
 		}
@@ -122,7 +108,7 @@ var Background = (function($) {
 		// Clear any existing timers.
 		clearTimeout(statusTimer);
 
-		var api = Deluge.api("web.connected", [], options)
+		var api = Deluge.api("web.connected", [], params)
 			.success(function (response) {
 				// Connected: activate the extension.
 				if (response === true) {
