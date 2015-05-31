@@ -126,7 +126,7 @@ $(function() {
 	function renderTable() {
 
 		//Set the href for the title, because otherwise the options doesn't exist early enough
-		$("#deluge_webui_link").attr("href", options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/");
+		$("#deluge_webui_link").attr("href", options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/" + options.address_base);
 
 		//clear the table
 		$("#torrent_container").empty();
