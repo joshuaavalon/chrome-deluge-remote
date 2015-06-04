@@ -12,8 +12,7 @@ function saveOptions() {
 			"handle_magnets":		$("#handle_magnets").is(":checked"),
 			"context_menu":			$("#context_menu").is(":checked"),
 			"badge_timeout":		parseInt($("#badge_timeout").val()),
-			"debug_mode":			$("#debug_mode").is(":checked"),
-			"version":				chrome.runtime.getManifest().version
+			"debug_mode":			$("#debug_mode").is(":checked")
 		},
 		function() {
 			console.log("Settings saved");
@@ -32,6 +31,7 @@ $(function() {
 	$(".buttons .cancel").on("click", function () {
 		window.close();
 	});
+	restoreOptions();
 	$("#version").text(chrome.runtime.getManifest().version);
 });
 
@@ -101,10 +101,5 @@ chrome.storage.sync.get(function(items) {
 		if (typeof items[i] === "boolean") {
 			$("#"+i).attr("checked", items[i]);
 		}
-	}
-	//If this is a new version with incompatible settings, save the settings based on what's now loaded (which should easily set defaults)
-	if (window.location.search == "?newver=true") {
-		console.log("New version. Saving settings.");
-		saveOptions();
 	}
 });

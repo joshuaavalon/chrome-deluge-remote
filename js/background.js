@@ -424,10 +424,6 @@ var Background = (function($) {
 // Run init stuff for the plugin.
 jQuery(document).ready(function ($) {
 	Background.checkStatus();
-	
-	if (localStorage.version === "undefined" || chrome.runtime.getManifest().version.split(".")[0] !== localStorage.version.split(".")[0]) {
-		chrome.tabs.create({ url: "options.html?newver=true" });
-	}
 });
 
 /*
