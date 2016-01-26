@@ -16,7 +16,7 @@ function saveOptions() {
 			"version":				chrome.runtime.getManifest().version
 		},
 		function() {
-			console.log("Settings saved");
+			debug_log("Settings saved");
 		}
 	);
 }
@@ -24,10 +24,10 @@ function saveOptions() {
 $(function() {
 	$(".buttons .save").on("click", function () {
 		saveOptions();
-		window.close();
 	});
 	$(".buttons .apply").on("click", function () {
 		saveOptions();
+		window.close();
 	});
 	$(".buttons .cancel").on("click", function () {
 		window.close();
@@ -39,7 +39,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 	var messages = [];
 	for (key in changes) {
 		var storageChange = changes[key];
-		console.log('Storage key "%s" in namespace "%s" changed. Old value was "%s", new value is "%s".',
+		debug_log('Storage key "%s" in namespace "%s" changed. Old value was "%s", new value is "%s".',
 			key,
 			namespace,
 			storageChange.oldValue,
@@ -63,16 +63,15 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 				break;
 			case "handle_torrents":
 				var handle_torrents = $("#handle_torrents").is(":checked");
-				messages.push("Download torrent icon " + ((handle_torrents) ? "en" : "dis") + "abled!");
+				messages.push("Torrent link handling " + ((handle_torrents) ? "en" : "dis") + "abled!");
 				break;
 			case "handle_magnets":
 				var handle_magnets = $("#handle_magnets").is(":checked");
-				messages.push("One click magnet downloads " + ((handle_magnets) ? "en" : "dis") + "abled!");
+				messages.push("Magnet link handling " + ((handle_magnets) ? "en" : "dis") + "abled!");
 				break;
 			case "context_menu":
 				var context_menu = $("#context_menu").is(":checked");
 				messages.push("Context Menu " + ((context_menu) ? "en" : "dis") + "abled!");
-				background.Background.ContextMenu(context_menu);
 				break;
 			case "badge_timeout":
 				messages.push("Badge timeout set to " + $("#badge_timeout option:selected").text());
@@ -96,7 +95,7 @@ chrome.storage.onChanged.addListener(function(changes, namespace) {
 
 chrome.storage.sync.get(function(items) {
 	for (var i in items) {
-		console.log(i + "\t" + items[i] + "\t" + (typeof items[i]));
+		debug_log(i + "\t" + items[i] + "\t" + (typeof items[i]));
 		$("#"+i).val(items[i]);
 		if (typeof items[i] === "boolean") {
 			$("#"+i).attr("checked", items[i]);
@@ -104,7 +103,7 @@ chrome.storage.sync.get(function(items) {
 	}
 	//If this is a new version with incompatible settings, save the settings based on what's now loaded (which should easily set defaults)
 	if (window.location.search == "?newver=true") {
-		console.log("New version. Saving settings.");
+		debug_log("New version. Saving settings.");
 		saveOptions();
 	}
 });

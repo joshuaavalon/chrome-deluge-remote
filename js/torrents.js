@@ -110,9 +110,7 @@ var Torrents = (function ($) {
 
 				response = null;
 
-				if (options.debug_mode) {
-					console.log(torrents);
-				}
+				debug_log(torrents);
 			});
 
 		return api;

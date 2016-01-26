@@ -1,8 +1,15 @@
-var Background = (function($) {
+var Background = null;
+
+function getBackground ($) {
 	// Store all public methods and attributes.
 	var pub = {};
 	var statusTimer = null;
 	var contextMenu = null;
+
+	//This line is not necessary, but it prevents an error in the background page later on.
+	//If the extension loads and tries to add a context menu while the context menu already exists from previous load, an error occurs.
+	//This is NOT a problem either way, but it's nice to avoid errors.
+	chrome.contextMenus.removeAll();
 
 	/*
 	 * Intervals used for status checking.
@@ -24,9 +31,7 @@ var Background = (function($) {
 					if (response && response[3] === "Offline") {
 						Deluge.api("web.start_daemon", [response[2]])
 							.success(function (response) {
-								if (options.debug_mode) {
-									console.log("Daemon started");
-								}
+								debug_log("Daemon started");
 								// Give the Daemon a few seconds to start.
 								setTimeout(function () { d.resolve(); }, 2000);
 							});
@@ -35,9 +40,7 @@ var Background = (function($) {
 					}
 				})
 				.error(function () {
-					if (options.debug_mode) {
-						console.log("Deluge: Error getting host status");
-					}
+					debug_log("Deluge: Error getting host status");
 					d.reject();
 				});
 		});
@@ -50,22 +53,23 @@ var Background = (function($) {
 	 */
 	function autoLoginFailed() {
 		// Inform anyone who's listening.
-		chrome.extension.sendRequest({ msg: "auto_login_failed" });
+		chrome.runtime.sendMessage({ msg: "auto_login_failed" });
 	}
 
 	function badgeText(text, colour) {
-		chrome.browserAction.setBadgeText({text: text});
-		chrome.browserAction.setBadgeBackgroundColor({color: colour});
+		debug_log("badgeText: "+text+", "+colour);
+		chrome.browserAction.setBadgeText({"text": text});
+		chrome.browserAction.setBadgeBackgroundColor({"color": colour});
 		setTimeout(function(){
 			chrome.browserAction.setBadgeText({text: ""});
-		}, options.badge_timeout);
+		}, ExtensionConfig.badge_timeout);
 	}
 
 	/*
 	 * If we have login details perform a login to the Deluge webUI.
 	 */
 	pub.login = function () {
-		return Deluge.api("auth.login", [options.password]);
+		return Deluge.api("auth.login", [ExtensionConfig.password]);
 	};
 
 	pub.connect = function () {
@@ -101,9 +105,7 @@ var Background = (function($) {
 	 * @return API promise - can attach additional success/error callbacks.
 	 * */
 	pub.checkStatus = function (params) {
-		if (options.debug_mode) {
-			console.log("Deluge: Checking status");
-		}
+		debug_log("Deluge: Checking status");
 
 		// Clear any existing timers.
 		clearTimeout(statusTimer);
@@ -137,24 +139,18 @@ var Background = (function($) {
 								} else {
 									// Wrong login - not much we can do, try
 									// checking in a bit.
-									if (options.debug_mode) {
-										console.log("Deluge: Incorrect login details.");
-									}
+									debug_log("Deluge: Incorrect login details.");
 									statusTimer = setTimeout(check_status, STATUS_CHECK_ERROR_INTERVAL);
 									pub.deactivate();
 									autoLoginFailed();
 								}
 							})
 							.error(function (jqXHR, text, err) {
-								if (options.debug_mode) {
-									console.log("Deluge: Error logging in");
-								}
+								debug_log("Deluge: Error logging in");
 								pub.deactivate();
 							});
 					} else {
-						if (options.debug_mode) {
-							console.log("Deluge: API error occured");
-						}
+						debug_log("Deluge: API error occured");
 						// Unknown API error, deactivate the extension.
 						pub.deactivate();
 					}
@@ -164,9 +160,12 @@ var Background = (function($) {
 					// Unknown error (resulting from 500/400 status codes
 					// normally); best thing to do is check again, but with a
 					// longer interval.
-					if (options.debug_mode) {
-						console.log("Deluge: Unknown error occured");
+					if (jqXHR.status == 0 && text == "error") {
+						debug_log("Error: Internet disconnected");
+					} else {
+						debug_log("Unknown error occured");
 					}
+					//debug_log(jqXHR.statusCode()); debug_log(text); debug_log(err);
 					statusTimer = setTimeout(pub.checkStatus, STATUS_CHECK_ERROR_INTERVAL);
 					pub.deactivate();
 				}
@@ -182,15 +181,13 @@ var Background = (function($) {
 	 * successfully.
 	 */
 	pub.activate = function () {
-		if (options.debug_mode) {
-			console.log("Deluge: Extension activated");
-		}
+		debug_log("Deluge: Extension activated");
 		chrome.browserAction.setIcon({path: "images/icons/deluge_active.png"});
 		chrome.browserAction.setTitle({
 			title: chrome.i18n.getMessage("browser_title")
 		});
 		// Send activation to anything listening.
-		chrome.extension.sendRequest({ msg: "extension_activated" });
+		chrome.runtime.sendMessage({ msg: "extension_activated" });
 	};
 
 	/* Disables the extension (status messages, disabling icons, etc..).
@@ -198,22 +195,20 @@ var Background = (function($) {
 	 * This is normally called after doing a status check, which returned false.
 	 */
 	pub.deactivate = function () {
-		if (options.debug_mode) {
-			console.log("Deluge: Extension deactivated");
-		}
+		debug_log("Extension deactivated");
 		chrome.browserAction.setIcon({path: "images/icons/deluge.png"});
 		chrome.browserAction.setTitle({
 			title: chrome.i18n.getMessage("browser_title_disabled")
 		});
 		// Send deactivation to anything listening.
-		chrome.extension.sendRequest({ msg: "extension_deactivated" });
+		chrome.runtime.sendMessage({ msg: "extension_deactivated" });
 	};
 
 	/**
 	* Add a torrent to Deluge using a URL. This method is meant to be called
 	* as part of Chrome extensions messaging system.
 	*
-	* @see chrome.extension.sendRequest && chrome.extension.onRequest
+	* @see chrome.runtime.sendMessage && chrome.runtime.onMessage
 	*/
 	pub.addTorrentFromUrl = function (request, sender, sendResponse) {
 		/**
@@ -232,25 +227,19 @@ var Background = (function($) {
 				Deluge.api("web.add_torrents", [[{"path": tmpTorrent, "options": options}]])
 					.success(function (obj) {
 						if (obj) {
-							if (options.debug_mode) {
-								console.log("deluge: added torrent to deluge.");
-							}
+							debug_log("Deluge: added torrent to deluge.");
 							badgeText("Add", "#00FF00");
-							sendResponse({msg: "success", result: obj, error: null});
+							chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Success adding torrent!"});
 							return;
 						}
 						badgeText("Fail", "#FF0000");
-						if (options.debug_mode) {
-							console.log("deluge: unable to add torrent to deluge.");
-						}
-						sendResponse({msg: "error", result: null, error: "unable to add torrent to deluge"});
+						debug_log("Deluge: unable to add torrent to deluge.");
+						chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Unable to add torrent to deluge"});
 					})
 					.error(function (req, status, err) {
-						if (options.debug_mode) {
-							console.log("deluge: unable to add torrent to deluge.");
-						}
+						debug_log("deluge: unable to add torrent to deluge.");
 						badgeText("Fail", "#FF0000");
-						sendResponse({msg: "error", result: null, error: "unable to add torrent to deluge"});
+						chrome.tabs.sendMessage(sender.tab.id, {msg: "Unable to add torrent to deluge"});
 					});
 			}
 
@@ -261,45 +250,36 @@ var Background = (function($) {
 				"prioritize_first_last_pieces"]])
 				.success(function (obj) {
 					if (obj) {
-						if (options.debug_mode) {
-							console.log("deluge: got options!");
-						}
+						debug_log("Deluge: got options!");
 						addToDeluge(obj);
 						return;
 					}
-					if (options.debug_mode) {
-						console.log("deluge: unable to fetch options.");
-					}
-					sendResponse({msg: "error", result: null, error: "unable to fetch options."});
+					debug_log("Deluge: unable to fetch options.");
+					chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Unable to fetch options."});
 				})
 				.error(function (req, status, err) {
-					if (options.debug_mode) {
-						console.log("deluge: unable to fetch options.");
-					}
-					sendResponse({msg: "error", result: null, error: "unable to fetch options."});
+					debug_log("Deluge: unable to fetch options.");
+					chrome.tabs.sendMessage(sender.tab.id, {msg: "Unable to fetch options."});
 				});
 		}
 
 		// First we need to download the torrent file to a temp location in Deluge.
+		debug_log("Sending URL to deluge");
 		Deluge.api("web.download_torrent_from_url", [request.url, ""])
 			.success(function (obj) {
 				if (obj) {
-					if (options.debug_mode) {
-						console.log("deluge: downloaded torrent.");
-					}
+					debug_log("Deluge: downloaded torrent.");
 					addTorrent(obj);
 					return;
 				}
-				if (options.debug_mode) {
-					console.log("deluge: failed to download torrent from URL, no obj or result.");
-				}
-				sendResponse({msg: "error", result: null, error: "failed to download torrent from URL."});
+				debug_log("Deluge: failed to download torrent from URL, no obj or result.");
+				chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: failed to download torrent from URL, no obj or result."});
+				badgeText("Fail", "#FF0000");
 			})
 			.error(function (req, status, err) {
-				if (options.debug_mode) {
-					console.log("deluge: failed to download torrent from URL.");
-				}
-				sendResponse({msg: "error", result: null, error: "failed to download torrent from URL."});
+				debug_log("Failed to send torrent URL to Deluge.");
+				chrome.tabs.sendMessage(sender.tab.id, {msg: "Failed to send URL to Deluge."});
+				badgeText("Fail", "#FF0000");
 			});
 	};
 
@@ -307,128 +287,110 @@ var Background = (function($) {
 	* Add a torrent to Deluge using a magnet URL. This method is meant to be called
 	* as part of Chrome extensions messaging system.
 	*
-	* @see chrome.extension.sendRequest && chrome.extension.onRequest
+	* @see chrome.runtime.sendMessage && chrome.runtime.onMessage
 	*/
 	pub.addTorrentFromMagnet = function (request, sender, sendResponse) {
 		Deluge.api("core.add_torrent_magnet", [request.url, ""])
 			.success(function (id) {
 				if (id) {
-					if (options.debug_mode) {
-						console.log("deluge: downloaded torrent.");
-					}
+					debug_log("deluge: downloaded torrent.");
 					badgeText("Add", "#00FF00");
-					sendResponse({msg: "success", result: id, error: null});
+					chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Success adding torrent from magnet"});
 					return;
 				}
-				if (options.debug_mode) {
-					console.log("deluge: failed to add torrent from magnet, no obj or result.");
-				}
+				debug_log("Deluge: failed to add torrent from magnet, no obj or result.");
 				badgeText("Fail", "#FF0000");
-				sendResponse({msg: "error", result: null, error: "failed to add torrent from magnet."});
+				chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Failed to add torrent from magnet."});
 			})
 			.error(function (req, status, err) {
-				if (options.debug_mode) {
-					console.log("deluge: failed to add torrent from magnet.");
-				}
+				debug_log("Deluge: failed to add torrent from magnet.");
 				badgeText("Fail", "#FF0000");
-				sendResponse({msg: "error", result: null, error: "failed to add torrent from magnet."});
+				chrome.tabs.sendMessage(sender.tab.id, {msg: "Failed to add torrent from magnet."});
 			});
 	}
-	
-	function handleContextMenuClick(OnClickData) {
-		var torrentUrl = OnClickData.linkUrl;
+
+	function handleContextMenuClick(info, tab) {
+		debug_log("Context menu sending link to Deluge: "+info.linkUrl);
+		var torrentUrl = info.linkUrl;
 		if (torrentUrl.search(/\/(download|get)\//) > 0 || torrentUrl.search(/\.torrent$/) > 0) {
+			debug_log("Link is a torrent");
 			Background.addTorrentFromUrl({url: torrentUrl}, [], function (response) {
 				if (response.msg === "success") {
-					if (Global.getDebugMode) {
-						console.log("Deluge: Torrent added");
-					}
+					debug_log("Deluge: Torrent added");
 				} else {
-					if (Global.getDebugMode) {
-						console.log("Deluge: Torrent could not be added");
-					}
+					debug_log("Deluge: Torrent could not be added");
 				}
 			});
 		} else if (torrentUrl.search(/magnet:/) != -1) {
+			debug_log("Link is a magnet");
 			Background.addTorrentFromMagnet({url: torrentUrl}, [], function (response) {
 				if (response.msg === "success") {
-					if (Global.getDebugMode) {
-						console.log("Deluge: Torrent added");
-					}
+					debug_log("Torrent added");
 				} else {
-					if (Global.getDebugMode) {
-						console.log("Deluge: Torrent could not be added");
-					}
+					debug_log("Torrent could not be added");
 				}
 			});
 		} else {
-			if (options.debug_mode) {
-				console.log("Deluge: Link not a torrent!");
-			}
+			debug_log("Link not a torrent/magnet!");
 		}
 
 		return false;
 	}
 
-	pub.ContextMenu = function (addremove) {
-		if (addremove) {
-			this.addContextMenu;
+	pub.ContextMenu = function (enabled) {
+		debug_log("pub.ContextMenu: "+enabled)
+		if (enabled) {
+			debug_log("this.addContextMenu");
+			this.addContextMenu();
 		} else {
-			this.removeContextMenu;
+			debug_log("this.removeContextMenu");
+			this.removeContextMenu();
 		}
 	};
 
 	pub.addContextMenu = function () {
+		debug_log("pub.addContextMenu");
 		if (contextMenu === null) {
 			contextMenu = chrome.contextMenus.create({
-				"title": "Add to Deluge",
-				"contexts": ["link"],
-				"onclick" : handleContextMenuClick
+				"id": "context_links",
+				"title": "Send to Deluge",
+				"contexts":[chrome.contextMenus.ContextType.LINK]
 			});
+			chrome.contextMenus.onClicked.addListener(handleContextMenuClick);
+			debug_log("Created contextMenu");
 		}
 	};
 
 	pub.removeContextMenu = function () {
-		if (contextMenu  !== null) {
-			chrome.contextMenus.remove(contextMenu);
-			contextMenu = null;
-		}
+		chrome.contextMenus.removeAll();
 	};
 
-	if (options.context_menu) {
-		pub.addContextMenu();
-	} else {
-		pub.removeContextMenu();
-	}
+	pub.ContextMenu(ExtensionConfig.context_menu);
 
 	pub.getVersion = function(sendResponse) {
 		Deluge.api("daemon.info")
 			.success(function (version) {
-				if (options.debug_mode) {
-					console.log("deluge: got version.");
-				}
+				debug_log("deluge: got version.");
 				version = version.split("-")[0].split(".");
 				sendResponse({major: Number(version[0]), minor: Number(version[1]), build: Number(version[2])});
 			})
 			.error(function (req, status, err) {
-				if (options.debug_mode) {
-					console.log("deluge: failed to get version.");
-				}
+				debug_log("deluge: failed to get version.");
 				sendResponse(0);
 			});
 	}
 
 	return pub;
-}(jQuery));
+}
 
 // Run init stuff for the plugin.
-jQuery(document).ready(function ($) {
-	Background.checkStatus();
-	
-	if (localStorage.version === "undefined" || chrome.runtime.getManifest().version.split(".")[0] !== localStorage.version.split(".")[0]) {
+function start() {
+	if (ExtensionConfig.version === "undefined" || chrome.runtime.getManifest().version.split(".")[0] !== ExtensionConfig.version.split(".")[0]) {
 		chrome.tabs.create({ url: "options.html?newver=true" });
 	}
-});
+	Background = getBackground();
+	Background.checkStatus();
+}
 
 /*
 * =====================================================================
@@ -437,21 +399,27 @@ jQuery(document).ready(function ($) {
 */
 
 // Any requests send via chrome ext messaging system.
-chrome.extension.onMessage.addListener(function (request, sender, sendResponse) {
-
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	debug_log("Received message: "+request.method)
+	debug_log(request);
 	switch(request.method) {
-		case "options":
+		case "ExtensionConfig":
 			sendResponse(
 				{
-					"value": options[request.key]
+					"value": ExtensionConfig[request.key]
 				}
 			);
 			break;
 		case "add_torrent_from_url":
+			debug_log("Adding torrent from URL: "+request.url)
 			Background.addTorrentFromUrl(request, sender, sendResponse);
 			break;
 		case "add_torrent_from_magnet":
 			Background.addTorrentFromMagnet(request, sender, sendResponse);
+			break;
+		case "context_menu":
+			debug_log("Changing context menu to: " + request.enabled);
+			Background.ContextMenu(request.enabled);
 			break;
 		default:
 			sendResponse({msg: "error", result: null, error: "nothing called!"});

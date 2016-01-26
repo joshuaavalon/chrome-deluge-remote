@@ -111,10 +111,8 @@ $(function() {
 		var information = Torrents.getGlobalInformation();
 		$globalInformation = $("#global-information");
 
-		if (options.debug_mode) {
-			console.log(Torrents);
-			console.log(information);
-		}
+		debug_log(Torrents);
+		debug_log(information);
 
 		$(".all", $globalInformation).html(information.all);
 		$(".downloading", $globalInformation).html(information.downloading);
@@ -126,7 +124,7 @@ $(function() {
 	function renderTable() {
 
 		//Set the href for the title, because otherwise the options doesn't exist early enough
-		$("#deluge_webui_link").attr("href", options.address_protocol + "://" + options.address_ip + ":" + options.address_port + "/" + (options.address_base != "" ? options.address_base+"/" : "") );
+		$("#deluge_webui_link").attr("href", ExtensionConfig.address_protocol + "://" + ExtensionConfig.address_ip + ":" + ExtensionConfig.address_port + "/" + (ExtensionConfig.address_base != "" ? ExtensionConfig.address_base+"/" : "") );
 
 		//clear the table
 		$("#torrent_container").empty();
@@ -216,15 +214,11 @@ $(function() {
 
 			Deluge.api(method, actions)
 				.success(function (data, textStatus, jqXHR) {
-					if (options.debug_mode) {
-						console.log(methods_messages[method].success);
-					}
+					debug_log(methods_messages[method].success);
 					updateTableDelay(250);
 				})
 				.error(function () {
-					if (options.debug_mode) {
-						console.log(methods_messages[method].failure);
-					}
+					debug_log(methods_messages[method].failure);
 				});
 		}
 
@@ -340,14 +334,14 @@ $(function() {
 
 			// Now check that the link contains either .torrent or download, get, etc...
 			if (url.search(/\/(download|get)\//) > 0 || url.search(/\.torrent$/) > 0) {
-				chrome.extension.sendRequest({ msg: "add_torrent_from_url", url: url},
+				chrome.runtime.sendMessage({ msg: "add_torrent_from_url", url: url},
 					function (response) {
 						if (response.msg === "success") {
 							$inputBox.val("");
 						}
 					});
 			} else if (url.search(/magnet:/) != -1) {
-				chrome.extension.sendRequest({ msg: "add_torrent_from_magnet", url: url},
+				chrome.runtime.sendMessage({ msg: "add_torrent_from_magnet", url: url},
 					function (response) {
 						console.log(response);
 						if (response.msg === "success") {
@@ -428,9 +422,7 @@ $(function() {
 	// timers within this script handle table updating.
 	function activated() {
 		if (!extensionActivated) {
-			if (options.debug_mode) {
-				console.log("Deluge: ACTIVATED");
-			}
+			debug_log("Deluge: ACTIVATED");
 			extensionActivated = true;
 			$overlay.hide();
 			updateTable();
@@ -448,11 +440,9 @@ $(function() {
 	}
 
 	// Setup listeners for closing message overlays coming from background.
-	chrome.extension.onRequest.addListener(
+	chrome.runtime.onMessage.addListener(
 		function (request, sender, sendResponse) {
-			if (options.debug_mode) {
-				console.log(request.msg);
-			}
+			debug_log(request.msg);
 			if (request.msg === "extension_activated") {
 				activated();
 			} else if (request.msg === "extension_deactivated") {

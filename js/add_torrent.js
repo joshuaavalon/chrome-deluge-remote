@@ -1,52 +1,42 @@
+debug_log("Creating click handler");
 $("body").on("click", "a", function(event) {
-	if (options.handle_magnets) {
-		if ($(this).attr("href").indexOf("magnet:") == 0) {
+	debug_log("Click handler activated.")
+	var url = $(this).prop("href");
+	debug_log("URL: "+url)
+	if (ExtensionConfig.handle_magnets) {
+		debug_log("Handling magnets enabled");
+		if (url.indexOf("magnet:") == 0) {
+			debug_log("Detected link as magnet");
 			event.stopPropagation();
 			event.preventDefault();
-			if (options.debug_mode){
-				console.log("Captured magnet link "+$(this).attr("href"));
-			}
-			chrome.extension.sendMessage(
+			debug_log("Captured magnet link "+url);
+			chrome.runtime.sendMessage(
 				{
-					method: "add_torrent_from_magnet",
-					url: $(this).attr("href")
-				},
-				function (response) {
-					console.log(response);
-					if (response.msg === "success") {
-						if (options.debug_mode) {
-							console.log("Success adding magnet "+$(this).attr("href"));
-						}
-						//TODO: show a badge on the browser button IAW options specified
-					}
+					"method": "add_torrent_from_magnet",
+					"url": url
 				}
 			);
+			debug_log("Link sent to Deluge.")
+		}
+	}
+	if (ExtensionConfig.handle_torrents) {
+		debug_log("Handling torrents enabled");
+		if (url.indexOf(".torrent") > -1) {
+			debug_log("Detected link as a torrent");
+			event.stopPropagation();
+			event.preventDefault();
+			debug_log("Captured .torrent link "+url)
+			chrome.runtime.sendMessage(
+				{
+					"method": "add_torrent_from_url",
+					"url": url
+				}
+			);
+			debug_log("Link sent to Deluge.")
 		}
 	}
 });
-$("body").on("click", "a", function(event) {
-	if (options.handle_torrents) {
-		if ($(this).attr("href").indexOf(".torrent") > -1) {
-			event.stopPropagation();
-			event.preventDefault();
-			if (options.debug_mode) {
-				console.log("Captured .torrent link "+$(this).attr("href"))
-			}
-			chrome.extension.sendMessage(
-				{
-					method: "add_torrent_from_url",
-					url: this.href
-				},
-				function (response) {
-					console.log(response);
-					if (response.msg === "success") {
-						if (options.debug_mode) {
-							console.log("Success adding torrent "+$(this).attr("href"));
-						}
-						//TODO: show a badge on the browser button IAW options specified
-					}
-				}
-			);
-		}
-	}
+
+chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
+	debug_log(request.msg);
 });
