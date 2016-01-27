@@ -130,7 +130,7 @@ $(function() {
 		$("#torrent_container").empty();
 
 		//sort the torrents - the extra sorts help to group things nicely
-		var torrents = Torrents.sort("state").sort("name").sort(localStorage.sortColumn).getAll();
+		var torrents = Torrents.sort(localStorage.sortColumn || "position").getAll();
 		if (localStorage.sortMethod === "desc") {
 			torrents.reverse();
 		}
