@@ -2,7 +2,7 @@ var Deluge = (function (Deluge, $) {
 	Deluge = Deluge || {};
 
 	function endpoint() {
-		return ExtensionConfig.address_protocol + "://" + ExtensionConfig.address_ip + ":" + (ExtensionConfig.address_port != "" ? ExtensionConfig.address_port : "8112") + "/" + (ExtensionConfig.address_base != "" ? ExtensionConfig.address_base+"/" : "") + "json";
+		return ExtensionConfig.address_protocol + "://" + ExtensionConfig.address_ip + ":" + (ExtensionConfig.address_port != "" ? ExtensionConfig.address_port : "8112") + "/" + (ExtensionConfig.address_base != "" ? ExtensionConfig.address_base+"/" : "");
 	}
 
 	// API Error Text Status.
@@ -11,6 +11,8 @@ var Deluge = (function (Deluge, $) {
 	Deluge.API_UNKNOWN_METHOD_CODE = 2;
 	Deluge.API_UNKNOWN_ERROR_CODE = 3;
 
+	Deluge.endpoint = function() { return endpoint(); };
+	
 	/*
 	 * Ajax wrapper for making calls to Deluge web API.
 	 *
@@ -21,7 +23,7 @@ var Deluge = (function (Deluge, $) {
 		var deferred = $.Deferred(function (d) {
 			// Default ajax options.
 			var defaults = {
-				url: endpoint(),
+				url: endpoint()+"json",
 				type: 'POST',
 				dataType: 'json'
 			};
