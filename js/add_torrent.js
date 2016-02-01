@@ -21,7 +21,7 @@ $("body").on("click", "a", function(event) {
 	}
 	if (ExtensionConfig.handle_torrents) {
 		debug_log("Handling torrents enabled");
-		if (url.indexOf(".torrent") > -1) {
+		if (url.search(/\.torrent$/) > 0) {
 			debug_log("Detected link as a torrent");
 			event.stopPropagation();
 			event.preventDefault();
