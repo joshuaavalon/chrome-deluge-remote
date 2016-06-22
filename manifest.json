@@ -1,7 +1,7 @@
 {
 	"name": "Remote Deluge",
 	"description": "Provides a quick overview of torrent status for Deluge.",
-	"version": "1.2.1",
+	"version": "1.2.2",
 	"icons": {
 		"128": "images/icons/128.png",
 		"64": "images/icons/64.png",
