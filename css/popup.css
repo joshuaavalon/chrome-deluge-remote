@@ -59,6 +59,11 @@ body {
 	margin-right: 10px;
 }
 
+#deluge_webui_link {
+	display:inline-block;
+	border:0;
+}
+
 
 #filters {
 	display:block;
