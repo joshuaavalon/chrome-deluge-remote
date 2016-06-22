@@ -8,7 +8,7 @@ function getBackground ($) {
 
 	//This line is not necessary, but it prevents an error in the background page later on.
 	//If the extension loads and tries to add a context menu while the context menu already exists from previous load, an error occurs.
-	//This is NOT a problem either way, but it's nice to avoid errors.
+	//This is NOT a problem either way, but it's nice to keep the console clear.
 	chrome.contextMenus.removeAll();
 
 	/*
@@ -312,16 +312,7 @@ function getBackground ($) {
 	function handleContextMenuClick(info, tab) {
 		debug_log("Context menu sending link to Deluge: "+info.linkUrl);
 		var torrentUrl = info.linkUrl;
-		if (torrentUrl.search(/\/(download|get)\//) > 0 || torrentUrl.search(/\.torrent$/) > 0) {
-			debug_log("Link is a torrent");
-			Background.addTorrentFromUrl({url: torrentUrl}, [], function (response) {
-				if (response.msg === "success") {
-					debug_log("Deluge: Torrent added");
-				} else {
-					debug_log("Deluge: Torrent could not be added");
-				}
-			});
-		} else if (torrentUrl.search(/magnet:/) != -1) {
+		if (torrentUrl.search(/magnet:/) != -1) {
 			debug_log("Link is a magnet");
 			Background.addTorrentFromMagnet({url: torrentUrl}, [], function (response) {
 				if (response.msg === "success") {
@@ -330,9 +321,19 @@ function getBackground ($) {
 					debug_log("Torrent could not be added");
 				}
 			});
-		} else {
+		} else {//if (torrentUrl.search(/\/(download|get)\//) > 0 || torrentUrl.search(/\.torrent$/) > 0) {
+			debug_log("Link is a torrent");
+			Background.addTorrentFromUrl({url: torrentUrl}, [], function (response) {
+				if (response.msg === "success") {
+					debug_log("Deluge: Torrent added");
+				} else {
+					debug_log("Deluge: Torrent could not be added");
+				}
+			});
+
+		} /*else {
 			debug_log("Link not a torrent/magnet!");
-		}
+		}*/
 
 		return false;
 	}

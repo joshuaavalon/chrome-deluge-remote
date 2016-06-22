@@ -15,7 +15,7 @@
 	"default_locale": "en",
 	"background": {
 		"scripts": [
-			"js/libs/jquery-2.1.3.min.js",
+			"js/libs/jquery-3.0.0.min.js",
 			"js/global_options.js",
 			"js/debug_log.js",
 			"js/deluge.js",
@@ -36,7 +36,7 @@
 				"https://*/*"
 			],
 			"js": [
-				"js/libs/jquery-2.1.3.min.js",
+				"js/libs/jquery-3.0.0.min.js",
 				"js/global_options.js",
 				"js/debug_log.js",
 				"js/add_torrent.js"

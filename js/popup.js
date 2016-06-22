@@ -343,7 +343,7 @@ $(function() {
 			} else if (url.search(/magnet:/) != -1) {
 				chrome.runtime.sendMessage({ msg: "add_torrent_from_magnet", url: url},
 					function (response) {
-						console.log(response);
+						debug_log(response);
 						if (response.msg === "success") {
 							$inputBox.val("");
 						}
@@ -368,7 +368,6 @@ $(function() {
 		});
 
 		$("#sort_invert").on("change", function () {
-			console.log($(this).is(":checked"));
 			localStorage.sortMethod = ($(this).is(":checked")) ? "desc" : "asc";
 			renderTable();
 		});

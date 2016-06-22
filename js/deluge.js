@@ -23,7 +23,7 @@ var Deluge = (function (Deluge, $) {
 		var deferred = $.Deferred(function (d) {
 			// Default ajax options.
 			var defaults = {
-				url: endpoint()+"json",
+				url: endpoint()+"json", //testing, makes it easier to track a given request   +"?rand="+Math.trunc(Math.random()*10000),
 				type: 'POST',
 				dataType: 'json'
 			};
