@@ -385,7 +385,7 @@ function getBackground ($) {
 
 // Run init stuff for the plugin.
 function start() {
-	if (ExtensionConfig.version === "undefined" || chrome.runtime.getManifest().version.split(".")[0] !== ExtensionConfig.version.split(".")[0]) {
+	if (typeof ExtensionConfig.version === "undefined" || chrome.runtime.getManifest().version.split(".")[0] !== ExtensionConfig.version.split(".")[0]) {
 		chrome.tabs.create({ url: "options.html?newver=true" });
 	}
 	Background = getBackground();
@@ -426,4 +426,3 @@ chrome.runtime.onMessage.addListener(function (request, sender, sendResponse) {
 	}
 
 });
-
