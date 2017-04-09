@@ -12,7 +12,7 @@ var Deluge = (function (Deluge, $) {
 	Deluge.API_UNKNOWN_ERROR_CODE = 3;
 
 	Deluge.endpoint = function() { return endpoint(); };
-	
+
 	/*
 	 * Ajax wrapper for making calls to Deluge web API.
 	 *
@@ -25,7 +25,8 @@ var Deluge = (function (Deluge, $) {
 			var defaults = {
 				url: endpoint()+"json", //testing, makes it easier to track a given request   +"?rand="+Math.trunc(Math.random()*10000),
 				type: 'POST',
-				dataType: 'json'
+				dataType: 'json',
+				contentType: 'application/json',
 			};
 				// Extend default with any user passed options.
 			var settings = $.extend({}, defaults, options);
