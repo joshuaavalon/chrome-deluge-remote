@@ -1,7 +1,8 @@
 {
-	"name": "Remote Deluge",
+	"update_url": "https://clients2.google.com/service/update2/crx",
+	"name": "Remote Deluge (Avalon Fork)",
 	"description": "Provides a quick overview of torrent status for Deluge.",
-	"version": "1.2.4",
+	"version": "1.2.5",
 	"icons": {
 		"128": "images/icons/128.png",
 		"64": "images/icons/64.png",
@@ -47,6 +48,7 @@
 		 "tabs",
 		 "contextMenus",
 		 "storage",
+		 "notifications",
 		 "http://*/*",
 		 "https://*/*"
 	],

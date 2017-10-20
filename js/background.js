@@ -59,10 +59,19 @@ function getBackground ($) {
 	function badgeText(text, colour) {
 		debug_log("badgeText: "+text+", "+colour);
 		chrome.browserAction.setBadgeText({"text": text});
-		chrome.browserAction.setBadgeBackgroundColor({"color": colour});
-		setTimeout(function(){
-			chrome.browserAction.setBadgeText({text: ""});
-		}, ExtensionConfig.badge_timeout);
+		if(colour)
+			chrome.browserAction.setBadgeBackgroundColor({"color": colour});
+	}
+
+	function notification(text) {
+		chrome.notifications.create({
+			type:     "basic",
+			iconUrl:  "images/deluge.png",
+			title:    "Deluge",
+			message:  text,
+			priority: 0,
+			eventTime: ExtensionConfig.badge_timeout
+		});
 	}
 
 	/*
@@ -188,7 +197,59 @@ function getBackground ($) {
 		});
 		// Send activation to anything listening.
 		chrome.runtime.sendMessage({ msg: "extension_activated" });
+		pub.update();
 	};
+
+	pub.update = function() {
+		var api = Deluge.api("web.update_ui", [[
+			"queue",
+			"name",
+			"total_size",
+			"state",
+			"progress",
+			"download_payload_rate",
+			"upload_payload_rate",
+			"eta",
+			"ratio",
+			"is_auto_managed",
+			"num_seeds",
+			"total_seeds",
+			"num_peers",
+			"total_peers",
+			"seeds_peers_ratio",
+			"is_finished",
+			"is_seed",
+			"active_time",
+			"seeding_time",
+			"time_added",
+			"tracker_host",
+			"tracker_status",
+			"label"
+		],
+			{}
+		],
+			{ timeout: 2000 }
+		)
+		.success(function (response) {
+			var i = 0;
+			for (id in response.torrents) {
+				if (!response.torrents.hasOwnProperty(id)) continue;
+				var torrent = response.torrents[id];
+				if (torrent.progress >= 100) {
+					i++;
+				}
+			}
+			var count;
+			if(i < 100)
+				count = i.toString();
+			else
+				count = "99+";
+			badgeText(count, "#00C800");
+		})
+		.error(function(response){
+			badgeText("");
+		});
+	}
 
 	/* Disables the extension (status messages, disabling icons, etc..).
 	 *
@@ -228,18 +289,18 @@ function getBackground ($) {
 					.success(function (obj) {
 						if (obj) {
 							debug_log("Deluge: added torrent to deluge.");
-							badgeText("Add", "#00FF00");
-							chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Success adding torrent!"});
+							notification("Success added torrent");
+							chrome.runtime.sendMessage({msg: "Deluge: Success adding torrent!"});
 							return;
 						}
-						badgeText("Fail", "#FF0000");
 						debug_log("Deluge: unable to add torrent to deluge.");
-						chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Unable to add torrent to deluge"});
+						notification("Unable to add torrent");
+						chrome.runtime.sendMessage({msg: "Deluge: Unable to add torrent to deluge"});
 					})
 					.error(function (req, status, err) {
 						debug_log("deluge: unable to add torrent to deluge.");
-						badgeText("Fail", "#FF0000");
-						chrome.tabs.sendMessage(sender.tab.id, {msg: "Unable to add torrent to deluge"});
+						notification("Unable to add torrent");
+						chrome.runtime.sendMessage({msg: "Unable to add torrent to deluge"});
 					});
 			}
 
@@ -255,11 +316,11 @@ function getBackground ($) {
 						return;
 					}
 					debug_log("Deluge: unable to fetch options.");
-					chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Unable to fetch options."});
+					chrome.runtime.sendMessage({msg: "Deluge: Unable to fetch options."});
 				})
 				.error(function (req, status, err) {
 					debug_log("Deluge: unable to fetch options.");
-					chrome.tabs.sendMessage(sender.tab.id, {msg: "Unable to fetch options."});
+					chrome.runtime.sendMessage({msg: "Unable to fetch options."});
 				});
 		}
 
@@ -273,13 +334,13 @@ function getBackground ($) {
 					return;
 				}
 				debug_log("Deluge: failed to download torrent from URL, no obj or result.");
-				chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: failed to download torrent from URL, no obj or result."});
-				badgeText("Fail", "#FF0000");
+				chrome.runtime.sendMessage({msg: "Deluge: failed to download torrent from URL, no obj or result."});
+				notification("Unable to add torrent");
 			})
 			.error(function (req, status, err) {
 				debug_log("Failed to send torrent URL to Deluge.");
-				chrome.tabs.sendMessage(sender.tab.id, {msg: "Failed to send URL to Deluge."});
-				badgeText("Fail", "#FF0000");
+				chrome.runtime.sendMessage({msg: "Failed to send URL to Deluge."});
+				notification("Unable to add torrent");
 			});
 	};
 
@@ -294,18 +355,18 @@ function getBackground ($) {
 			.success(function (id) {
 				if (id) {
 					debug_log("deluge: downloaded torrent.");
-					badgeText("Add", "#00FF00");
-					chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Success adding torrent from magnet"});
+					chrome.runtime.sendMessage({msg: "Deluge: Success adding torrent from magnet"});
+					notification("Success added torrent");
 					return;
 				}
 				debug_log("Deluge: failed to add torrent from magnet, no obj or result.");
-				badgeText("Fail", "#FF0000");
-				chrome.tabs.sendMessage(sender.tab.id, {msg: "Deluge: Failed to add torrent from magnet."});
+				chrome.runtime.sendMessage({msg: "Deluge: Failed to add torrent from magnet."});
+				notification("Unable to add torrent");
 			})
 			.error(function (req, status, err) {
 				debug_log("Deluge: failed to add torrent from magnet.");
-				badgeText("Fail", "#FF0000");
-				chrome.tabs.sendMessage(sender.tab.id, {msg: "Failed to add torrent from magnet."});
+				chrome.runtime.sendMessage({msg: "Failed to add torrent from magnet."});
+				notification("Unable to add torrent");
 			});
 	}
 

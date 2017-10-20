@@ -334,14 +334,14 @@ $(function() {
 
 			// Now check that the link contains either .torrent or download, get, etc...
 			if (url.search(/\/(download|get)\//) > 0 || url.search(/\.torrent$/) > 0) {
-				chrome.runtime.sendMessage({ msg: "add_torrent_from_url", url: url},
+				chrome.runtime.sendMessage({ method: "add_torrent_from_url", url: url},
 					function (response) {
 						if (response.msg === "success") {
 							$inputBox.val("");
 						}
 					});
 			} else if (url.search(/magnet:/) != -1) {
-				chrome.runtime.sendMessage({ msg: "add_torrent_from_magnet", url: url},
+				chrome.runtime.sendMessage({ method: "add_torrent_from_magnet", url: url},
 					function (response) {
 						debug_log(response);
 						if (response.msg === "success") {

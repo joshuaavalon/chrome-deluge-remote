@@ -11,6 +11,8 @@ I develop this in my spare time, which is very limited. Pull requests will be gr
 ![](webstore/screenshot1.png)
 
 ## Version History
+2017-10-20 v1.2.5
+* Fix some bugs, change badge  text to finished count, move added message to notification.
 
 2017-04-10 v1.2.4
 * Fix for Deluge v1.3.14
