@@ -2,7 +2,7 @@
 
 Provides quick overview of torrent information in Chrome for the torrent client Deluge. 
 
-This is not on Chrome Web Store because refuse me publish it even I chaange the icon, name and description. You can install it by loading unpacked (Linux/Mac) or whitelist it through domain policy (Windows).
+This is not on Chrome Web Store because Google refuse me publish it even I change the icon, name and description. You can install it by loading unpacked (Linux/Mac) or whitelist it through domain policy (Windows).
 
 ## Request for help
 
